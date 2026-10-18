@@ -4,391 +4,347 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Hill Weather</title>
-<meta name="theme-color" content="#141311">
-<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#EEF1EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151916" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="hill/wx">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11' shape-rendering='crispEdges'%3E%3Crect width='11' height='11' rx='2' fill='%23141311'/%3E%3Cpath fill='%23e8833a' d='M3 4h3v1h-3zM7 4h1v1h-1zM2 5h7v1h-7zM2 6h7v1h-7zM1 7h9v1h-9zM1 8h9v1h-9z'/%3E%3Cpath fill='%23ece7df' d='M4 2h1v1h-1zM3 3h3v1h-3z'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABpElEQVR42u3dsQmDQBSA4RhcQOIQBqxcxyUyigM4k5VghrHIAkGuODnP+77awsSfZ3E8rNpX84B/nv4CxIE4EAfiQByIA3EgDsSBOEAciANxIA7EgTgQB+JAHIgDxIE4EAfiQByIA3EgDsSBOEAciANxIA7EgTgQB+JAHIgDcYA4EAcR1Df7Pd91Cbyy6weP3+RAHIgDcSAOxIE4EAfiQBwgDsSBODhdlcXnysPPWs9Q7PmtyYE4EAfiQByIA3EgDsSBOBAHiANxEEEeu7L7PGZxn+vnHXhlP20mB14riANxgDgQB+JAHIgDcSAOxIE4KELKXdnwM8ySJTy/NTkQB+JAHIgDcSAOxIE4EAfiAHEgDsSBOBAH4kAciANxIA4QB+JAHIgDcSAOLi7+rqwN2FSib9WaHIgDcSAOxIE4EAfiQByIA3GAOBAH4kAciANxIA7EgTgQB4gDcSAOxIE4EAcXl/K7spgciANxIA4QB+JAHIgDcSAOxIE4EAfiQBwgDsSBOBAH4kAciANxIA7EAeJAHIgDcSAOxIE4EAfiQBwgDg78AKFjE3OSsTtlAAAAAElFTkSuQmCC">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Hill Weather">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23EEF1EA'/%3E%3Cellipse cx='16' cy='17.5' rx='12.5' ry='10.5' fill='none' stroke='%23B07A4F' stroke-width='1.6'/%3E%3Cellipse cx='16' cy='17.5' rx='7.8' ry='6.4' fill='none' stroke='%23B07A4F' stroke-width='1.6'/%3E%3Cpath d='M16 11l5 9h-10z' fill='%231E2420'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400..800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Barlow+Condensed:wght@600;700;800&display=swap">
 <style>
-/* Layout: the Everyday Tracker's terminal look, carried over. Dark, monospace, orange as the one accent.
-   Sections are rounded outline boxes with their name set into the top border, like a TUI panel.
-   Verdict colours are data (good / fair / poor / no go), the orange is chrome: it marks the chosen
-   walk window, the selected day and spot. Weather icons are pixel drawings, like the tab icons.
-   Forecast opens first: day strip + spot chips, verdict box, daylight, hour by hour, kit. */
+/* Layout: an OS-map sheet, reduced to essentials. One column, no boxes: bands separated by hairlines.
+   Spots row, day row, then the answer (verdict, best window, hour strip) over faint contour lines,
+   then the two choices that change it, then why, what to pack, and hour-by-hour folded away.
+   Map-water blue is the one accent: it marks the chosen day and your walk. Verdict colours are data. */
 :root {
-  --bg: #141311;
-  --panel: #1c1a17;
-  --raise: #24211d;
-  --line: #3b3731;
-  --fg: #ece7df;
-  --muted: #a39d93;
-  --faint: #6f6a62;
-  --accent: #e8833a;
-  --accent-ink: #1a0f06;
-  --accent-wash: rgba(232,131,58,.13);
-  --good: #7cc47f;
-  --fair: #d9bf55;
-  --poor: #f0575d;
-  --sun: #f3dc9b;
-  --sun-dim: rgba(243,220,155,.42);
-  --rain: #4fb3c8;
-  --snow: #ece7df;
-  --mono: "Atkinson Hyperlegible Mono", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
-  color-scheme: dark;
+  --paper: #EEF1EA;
+  --surface: #FBFCF9;
+  --well: #E1E6DC;
+  --seg-on: #FBFCF9;
+  --ink: #1E2420;
+  --muted: #5A6359;
+  --faint: #7A8278;
+  --rule: #D3D9CE;
+  --rule-soft: #DDE2D8;
+  --contour: #B07A4F;
+  --height: #8A5631;
+  --water: #24618A;
+  --water-ink: #123A55;
+  --water-wash: #DCE7EF;
+  --alt: #E1E8DB;
+  --good: #2E7341;
+  --fair: #8F5C00;
+  --poor: #A8352A;
+  --nogo: #6E1B12;
+  --good-f: #6BA85F;
+  --fair-f: #E2B544;
+  --poor-f: #C9573D;
+  --nogo-f: #6E1B12;
+  --toast-link: #A9CDEA;
+  --shadow: 0 1px 2px rgba(30,36,32,.14), 0 2px 8px rgba(30,36,32,.06);
+  --scrim: rgba(30,36,32,.42);
+  --sans: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --cond: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #151916;
+    --surface: #1E2420;
+    --well: #262D28;
+    --seg-on: #414B43;
+    --ink: #E7ECE4;
+    --muted: #A3AC9F;
+    --faint: #7E877B;
+    --rule: #313933;
+    --rule-soft: #2A312C;
+    --contour: #9A7558;
+    --height: #D3A47E;
+    --water: #84B9E0;
+    --water-ink: #D6E8F5;
+    --water-wash: rgba(132,185,224,.17);
+    --alt: #212823;
+    --good: #82CB8C;
+    --fair: #E5BC55;
+    --poor: #F08670;
+    --nogo: #E8765F;
+    --good-f: #5E9F55;
+    --fair-f: #D6AB3D;
+    --poor-f: #C9573D;
+    --nogo-f: #E8765F;
+    --toast-link: #24618A;
+    --shadow: 0 1px 2px rgba(0,0,0,.5);
+    --scrim: rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
 }
 * { box-sizing: border-box; }
-html, body { background: var(--bg); margin: 0; }
-body { color: var(--fg); font-family: var(--mono); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+html, body { margin: 0; background: var(--paper); }
+body { color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.4; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 9; background: var(--paper); }
 [hidden] { display: none !important; }
-::selection { background: var(--accent); color: var(--accent-ink); }
-button, input, textarea { font: inherit; color: inherit; }
-button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
-:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
-a { color: var(--muted); text-underline-offset: 3px; text-decoration-color: var(--line); }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; background: none; border: 0; padding: 0; text-align: inherit; }
+:focus-visible { outline: 2px solid var(--water); outline-offset: 2px; }
+a { color: var(--water); text-underline-offset: 3px; }
 .num { font-variant-numeric: tabular-nums; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.px { display: block; width: 14px; height: 14px; }
-.muted { color: var(--muted); }
 
-.wrap {
-  max-width: 620px; margin: 0 auto;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: calc(14px + env(safe-area-inset-top, 0px)) calc(112px + env(safe-area-inset-bottom, 0px));
-}
+.app { max-width: 620px; margin: 0 auto; padding-top: calc(8px + env(safe-area-inset-top, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.gut { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 
-/* header box */
-.menubar { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--accent); border-radius: 10px; padding: 10px 14px; }
-.brand { display: flex; align-items: baseline; gap: 8px; font-weight: 800; font-size: 1.02rem; color: var(--accent); }
-.cur { display: inline-block; width: .55em; height: 1em; background: var(--accent); transform: translateY(2px); }
-.today { font-size: .82rem; color: var(--muted); text-align: right; }
+/* spots row */
+.spots { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding-block: 8px 4px; }
+.spots::-webkit-scrollbar { display: none; }
+.chip { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 14px; border-radius: 22px; font-weight: 600; font-size: 14px; white-space: nowrap; }
+.chip .g { font-weight: 800; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); font-weight: 700; }
+.chip[aria-pressed="true"] .g { color: inherit !important; }
+.chip.add { border: 1px dashed var(--faint); color: var(--muted); }
+.chip svg { width: 14px; height: 14px; }
 
-/* boxes with their name set into the border */
-.win { position: relative; margin-top: 26px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
-.win.focusbox { border-color: var(--accent); }
-.win > .tbar { position: absolute; top: -.72em; left: 12px; max-width: calc(100% - 130px); margin: 0; padding: 0 6px; background: linear-gradient(var(--bg) 50%, var(--panel) 50%); line-height: 1.3; }
-.win > .tbar h2 { margin: 0; font-size: .9rem; font-weight: 800; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.win > .tbar-r { position: absolute; top: calc(-.72em - 7px); right: 12px; padding: 7px 6px; border: 0; background: linear-gradient(var(--bg) 50%, var(--panel) 50%); line-height: 1.3; font-size: .78rem; font-weight: 700; color: var(--muted); }
-.win > .tbar-r u { text-decoration-color: var(--faint); text-underline-offset: 3px; }
-.wbody { padding: 16px 14px 14px; }
-.lbl { display: block; font-size: .68rem; color: var(--faint); letter-spacing: .07em; text-transform: uppercase; }
+/* day row */
+.days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; padding-block: 4px 12px; border-bottom: 1px solid var(--rule); }
+.days:empty { display: none; }
+.day { display: flex; flex-direction: column; align-items: center; min-height: 64px; padding: 6px 0; border-radius: 12px; text-align: center; }
+.day .wd { font-size: 12px; font-weight: 600; }
+.day .dn { font-size: 17px; font-weight: 700; line-height: 1.15; }
+.day .g { font-size: 15px; font-weight: 800; line-height: 1.25; }
+.day.off { color: var(--faint); }
+.day[aria-pressed="true"] { background: var(--water-wash); color: var(--water-ink); }
 
-/* buttons */
-.btn { border: 1px solid var(--line); background: var(--raise); border-radius: 8px; padding: 10px 16px; font-weight: 700; font-size: .9rem; }
-.btn.sm { padding: 5px 11px; font-size: .82rem; }
-.btn.default { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.btn.inv { background: var(--poor); border-color: var(--poor); color: var(--bg); }
-.linkbtn { background: none; border: 0; padding: 6px 0; font-weight: 700; font-size: .86rem; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
-.linkbtn.danger { color: var(--poor); }
+/* the answer */
+.hero { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 18px; padding-block: 28px; }
+.hero > :not(.contours) { position: relative; }
+.contours { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: var(--contour); opacity: .7; pointer-events: none; }
+.hd { display: flex; flex-direction: column; gap: 2px; }
+.name { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 10px; }
+.name h1 { margin: 0; font-family: var(--cond); font-weight: 600; font-size: 24px; letter-spacing: .24em; line-height: 1.15; text-transform: uppercase; overflow-wrap: anywhere; }
+.ht { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-style: italic; font-weight: 500; color: var(--height); }
+.ht svg { width: 10px; height: 9px; fill: currentColor; }
+.edit { padding: 10px 4px; margin: -10px 0; font-size: 14px; font-weight: 600; color: var(--water); }
+.when { font-size: 14px; color: var(--muted); }
+.empty-h { margin: 0; font-family: var(--cond); font-weight: 700; font-size: 34px; line-height: 1.05; }
+.verdict { display: flex; align-items: center; gap: 12px; color: var(--c); }
+.badge { flex: 0 0 auto; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--c); color: var(--paper); font-weight: 700; font-size: 22px; }
+.vword { font-family: var(--cond); font-weight: 800; font-size: 84px; line-height: .88; text-transform: uppercase; }
+.vword.long { font-size: 60px; }
+.vline { margin: -6px 0 0; font-size: 17px; line-height: 1.35; }
+.win { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 10px; }
+.win b { font-family: var(--cond); font-weight: 700; font-size: 34px; line-height: 1; color: var(--water); }
+.win span { font-size: 14px; color: var(--muted); }
+.strip { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); column-gap: 2px; row-gap: 3px; }
+.hc { grid-row: 1; height: 20px; border-radius: 2px; background: var(--f); }
+.hc.nd { background: var(--rule); }
+.hc.nogo { background: repeating-linear-gradient(135deg, var(--nogo-f) 0 3px, var(--paper) 3px 5px); box-shadow: inset 0 0 0 1px var(--nogo-f); }
+.hc.past { opacity: .3; }
+.hb { grid-row: 2; height: 7px; border: 2px solid var(--water); border-top: 0; border-radius: 0 0 2px 2px; }
+.hl { grid-row: 3; font-size: 10px; text-align: center; color: var(--muted); font-variant-numeric: tabular-nums; }
+.hl.on { color: var(--water); font-weight: 700; }
+.sun { margin: -6px 0 0; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sun b { color: var(--ink); font-weight: 600; }
+.nowl { margin: -8px 0 0; font-size: 13px; color: var(--muted); }
+.nowl b { color: var(--ink); font-weight: 600; }
+.alt { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 8px 14px; border-radius: 12px; background: var(--alt); text-align: left; font-size: 14px; }
+.alt .g { color: var(--c); font-size: 16px; font-weight: 800; }
+.alt > span { flex: 1; min-width: 0; }
+.alt b { font-weight: 600; }
+.alt small { font-size: 14px; color: var(--muted); }
+.chev { width: 16px; height: 16px; flex: 0 0 auto; fill: none; stroke: var(--muted); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.loading { margin: 0; color: var(--muted); }
+.errp { margin: 0; }
 
-/* sticky day strip + spot chips */
-.sticky { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; margin: 14px -16px 0; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--line); }
-.filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding-inline: 16px; }
-.filters::-webkit-scrollbar { display: none; }
-.fchip { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: none; border-radius: 6px; padding: 5px 10px; font-size: .8rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
-.fchip .cg { font-weight: 800; }
-.fchip[aria-pressed="true"] { color: var(--fg); border-color: var(--accent); background: var(--accent-wash); }
+/* bands below */
+.sec { display: flex; flex-direction: column; gap: 14px; padding-block: 22px 24px; border-top: 1px solid var(--rule); }
+.sec h2 { margin: 0; font-family: var(--cond); font-weight: 700; font-size: 15px; letter-spacing: .16em; text-transform: uppercase; }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.flbl { font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.seg { display: grid; grid-template-columns: repeat(var(--k), minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: 12px; background: var(--well); }
+.seg button { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 48px; border-radius: 9px; font-weight: 600; font-size: 15px; text-align: center; line-height: 1.2; }
+.seg button small { font-size: 12px; font-weight: 400; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--seg-on); box-shadow: var(--shadow); font-weight: 700; }
+.li { display: grid; grid-template-columns: 20px minmax(0, 1fr); column-gap: 10px; align-items: baseline; }
+.li .g { text-align: center; font-size: 16px; font-weight: 800; color: var(--c); }
+.li b { font-weight: 600; font-size: 16px; }
+.li small { grid-column: 2; font-size: 13px; color: var(--muted); }
+.li.pk .g { color: var(--water); }
+.li.pk b { font-weight: 500; }
 
-/* verdict */
-.fhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
-.fhead p { margin: 0; font-size: .82rem; color: var(--muted); }
-.fhead p b { color: var(--fg); }
-.vhead { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px 18px; flex-wrap: wrap; }
-.vleft { display: flex; align-items: baseline; gap: 8px; color: var(--c); }
-.vtag { font-weight: 800; font-size: 1.05rem; white-space: pre; }
-.vword { font-weight: 800; font-size: 2.7rem; line-height: .95; letter-spacing: -.03em; }
-.vword.muted { color: var(--muted); font-size: 2.1rem; }
-.vwin { display: grid; margin-left: auto; text-align: right; }
-.vwin b { font-size: 1.3rem; font-weight: 800; line-height: 1.25; }
-.vwin small { font-size: .76rem; color: var(--muted); }
-.vnote { margin: 10px 0 0; color: var(--muted); font-size: .84rem; }
-.nextday { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 7px 11px; background: var(--raise); border: 1px solid var(--line); border-radius: 8px; font-size: .84rem; font-weight: 700; text-align: left; }
-.nextday .g { color: var(--c); font-weight: 800; }
-
-.hstrip { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); column-gap: 2px; margin-top: 16px; }
-.hc { grid-row: 1; height: 16px; background: var(--c); border-radius: 1px; }
-.hc.nd { background: var(--line); }
-.hc.nogo { background: repeating-linear-gradient(135deg, var(--poor) 0 3px, var(--panel) 3px 5px); box-shadow: inset 0 0 0 1px var(--poor); }
-.hc.past { opacity: .28; }
-.hb { grid-row: 2; height: 7px; margin-top: 3px; border: 2px solid var(--accent); border-top: 0; border-radius: 0 0 3px 3px; }
-.hl { grid-row: 3; margin-top: 2px; font-size: .62rem; color: var(--faint); text-align: center; }
-.hl.on { color: var(--accent); font-weight: 800; }
-.legend { display: flex; flex-wrap: wrap; gap: 3px 12px; margin: 8px 0 0; font-size: .7rem; color: var(--faint); }
-.legend b { color: var(--c); }
-.nowl { margin: 12px 0 0; font-size: .84rem; }
-.nowl .lbl { display: inline; margin-right: 6px; }
-
-.why { list-style: none; margin: 14px 0 0; padding: 12px 0 0; border-top: 1px dashed var(--line); display: grid; gap: 8px; }
-.why li { display: flex; align-items: baseline; gap: 8px; font-size: .88rem; line-height: 1.35; }
-.why .tr { color: var(--faint); flex: 0 0 auto; }
-.why .lv { flex: 0 0 1.2ch; color: var(--c); font-weight: 800; text-align: center; }
-.why small { display: block; color: var(--muted); font-size: .76rem; margin-top: 1px; }
-
-#vbox { scroll-margin-top: calc(70px + env(safe-area-inset-top, 0px)); }
-
-/* this week: one row per day, tap to see that day */
-.wlist { display: grid; padding: 12px 6px 6px; }
-.wrow { display: grid; grid-template-columns: 9ch minmax(0, 1fr) auto; grid-template-areas: "d r w" ". s s"; gap: 2px 10px; align-items: baseline; width: 100%; padding: 9px 8px; text-align: left; background: none; border: 0; border-top: 1px dashed var(--line); }
-.wrow:first-child { border-top-color: transparent; }
-.wrow .wd { grid-area: d; font-weight: 700; font-size: .88rem; white-space: nowrap; }
-.wrow .wr { grid-area: r; display: inline-flex; gap: 6px; color: var(--c); font-weight: 800; font-size: .9rem; white-space: nowrap; }
-.wrow .ww { grid-area: w; font-weight: 700; font-size: .84rem; }
-.wrow .ws { grid-area: s; font-size: .74rem; color: var(--muted); }
-.wrow[aria-pressed="true"] { background: var(--accent-wash); border-radius: 8px; border-top-color: transparent; }
-.wrow[aria-pressed="true"] + .wrow { border-top-color: transparent; }
-.wrow[aria-pressed="true"] .wd { color: var(--accent); }
-
-/* daylight */
-.dl { display: flex; flex-wrap: wrap; gap: 8px 24px; }
-.dl b { font-size: 1.15rem; font-weight: 800; }
-.dbar { position: relative; margin-top: 16px; }
-.dbar .trk { position: relative; height: 12px; background: var(--line); overflow: hidden; }
-.dbar .trk::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 6px, var(--panel) 6px 8px); }
-.dbar .trk i { position: absolute; top: 0; bottom: 0; }
-.dbar .lit { background: var(--sun-dim); }
-.dbar .wnd { background: var(--accent); }
-.dbar .nowm { position: absolute; top: -5px; bottom: -5px; width: 2px; margin-left: -1px; background: var(--fg); }
-.dticks { display: flex; justify-content: space-between; margin-top: 5px; font-size: .64rem; color: var(--faint); }
-.dnote { margin: 10px 0 0; font-size: .84rem; color: var(--muted); }
-.dnote b { color: var(--fg); }
-
-/* hour by hour */
-.hnote { margin: 0 0 10px; font-size: .76rem; color: var(--muted); }
+.hrs { border-top: 1px solid var(--rule); }
+.more { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; text-align: left; }
+.more > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.more b { font-weight: 600; font-size: 16px; }
+.more small { font-size: 13px; color: var(--muted); }
+.more .chev { width: 18px; height: 18px; }
+@media (prefers-reduced-motion: no-preference) { .more .chev { transition: transform .2s; } }
+.more[aria-expanded="true"] .chev { transform: rotate(90deg); }
+.hbody { padding-bottom: 18px; }
+.hnote { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
 .tscroll { overflow-x: auto; margin-inline: -4px; }
-.hours { width: 100%; border-collapse: collapse; font-size: .8rem; font-variant-numeric: tabular-nums; }
-.hours th { padding: 0 5px 6px; font-weight: 400; font-size: .66rem; color: var(--faint); text-align: right; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
-.hours td { padding: 5px 5px; text-align: right; border-top: 1px dashed var(--line); white-space: nowrap; }
+.hours { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.hours th { padding: 0 5px 6px; font-weight: 600; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); text-align: right; white-space: nowrap; }
+.hours td { padding: 7px 5px; text-align: right; border-top: 1px solid var(--rule-soft); white-space: nowrap; }
 .hours .tm { text-align: left; }
-.hours td.ic { width: 24px; }
-.hours td.ic .px { margin-left: auto; }
+.hours td.ic { width: 26px; color: var(--muted); }
+.hours td.ic svg { display: block; width: 18px; height: 18px; margin-left: auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .hours .mu { color: var(--muted); }
-.hours .wet { color: var(--rain); font-weight: 700; }
+.hours .wet { color: var(--water); font-weight: 600; }
 .hours td.lv { color: var(--c); font-weight: 800; text-align: center; }
-.hours tr.inw td { background: var(--accent-wash); }
-.hours tr.inw td.tm { color: var(--accent); font-weight: 800; }
+.hours tr.inw td { background: var(--water-wash); }
+.hours tr.inw td.tm { color: var(--water); font-weight: 700; }
 .hours tr.dark td:not(.lv) { color: var(--faint); }
 .hours tr.past td { opacity: .45; }
-.more { background: none; border: 0; padding: 8px 0 0; font-weight: 700; font-size: .82rem; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
+.lnk { min-height: 40px; padding: 0 2px; font-weight: 600; font-size: 14px; color: var(--water); }
 
-/* pack list */
-.kit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
-.kit li { display: flex; gap: 10px; align-items: baseline; font-size: .9rem; }
-.kit .b { color: var(--accent); font-weight: 800; }
-.kit small { display: block; color: var(--muted); font-size: .76rem; }
+.status { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-block: 18px 28px; border-top: 1px solid var(--rule); text-align: center; font-size: 12px; color: var(--muted); }
+.status p { margin: 0; }
+.status .lnk { min-height: 32px; font-size: 12px; }
 
-.loading { margin: 0; color: var(--muted); font-size: .88rem; }
-.errp { margin: 0 0 12px; font-size: .88rem; }
+.primary { width: 100%; min-height: 50px; border-radius: 12px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 16px; text-align: center; }
 
-/* spots view */
-.bets { display: grid; gap: 8px; }
-.bet { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 9px 10px; background: var(--raise); border: 0; border-radius: 8px; }
-.bet .g { flex: 0 0 1.4ch; color: var(--c); font-weight: 800; font-size: 1.05rem; text-align: center; }
-.bet .bt { flex: 1; min-width: 0; display: grid; }
-.bet .bt b { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bet .bt small { color: var(--muted); font-size: .78rem; }
-.bet .arr { color: var(--faint); }
-.bets-sub { margin: 0 0 12px; font-size: .8rem; color: var(--muted); }
-.hintline { margin: 18px 0 0; font-size: .78rem; color: var(--faint); }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 26px 12px; margin-top: 26px; }
-.acard { position: relative; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 12px 11px; display: block; min-width: 0; }
-.acard:active { border-color: var(--accent); }
-.acard.on { border-color: var(--accent); }
-.acard .hd { position: absolute; top: -.72em; left: 10px; max-width: calc(100% - 20px); padding: 0 6px; background: linear-gradient(var(--bg) 50%, var(--panel) 50%); font-weight: 800; font-size: .84rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.acard .bd { display: grid; gap: 2px; min-width: 0; }
-.acard .n { font-weight: 800; font-size: 1.5rem; line-height: 1.1; }
-.acard .n small { font-size: .74rem; font-weight: 400; color: var(--muted); margin-left: 6px; }
-.acard .sub { font-size: .72rem; color: var(--muted); line-height: 1.3; }
-.wk { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin: 8px 0 4px; text-align: center; }
-.wk > span { display: grid; }
-.wk b { font-weight: 800; font-size: .95rem; line-height: 1.15; }
-.wk i { font-style: normal; font-size: .6rem; color: var(--faint); }
-
-/* bottom bar */
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; background: rgba(20,19,17,.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--line); padding: 8px max(16px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
-.tabbar .in { max-width: 420px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
-.tab { display: flex; align-items: center; justify-content: center; gap: 7px; background: none; border: 1px solid transparent; border-radius: 8px; padding: 8px 6px; font-weight: 700; font-size: .88rem; color: var(--faint); }
-.tab .px { width: 15px; height: 15px; }
-.tab[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-wash); }
-.add { width: 52px; height: 52px; border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; }
-.add:active { transform: scale(.95); }
-.add svg { width: 20px; height: 20px; }
-
-/* panels that drop from the top (so the phone keyboard never covers them) */
-.scrim { position: fixed; inset: 0; z-index: 10; background: rgba(0,0,0,.55); }
+/* sheets drop from the top, so the phone keyboard never covers them */
+.scrim { position: fixed; inset: 0; z-index: 10; background: var(--scrim); }
 .sheet {
-  position: fixed; top: calc(8px + env(safe-area-inset-top, 0px)); left: 8px; right: 8px; z-index: 11;
-  max-width: 604px; margin: 0 auto; max-height: calc(100vh - 24px - env(safe-area-inset-top, 0px)); max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px)); overflow-y: auto;
-  background: var(--panel); border: 1px solid var(--accent); border-radius: 12px; box-shadow: 0 24px 60px rgba(0,0,0,.6);
+  position: fixed; z-index: 11; top: calc(8px + env(safe-area-inset-top, 0px));
+  left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px));
+  max-width: 604px; margin: 0 auto; overflow-y: auto;
+  max-height: calc(100vh - 24px - env(safe-area-inset-top, 0px)); max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px));
+  background: var(--paper); border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,.3);
 }
-.sheet .tbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px 10px 14px; border-bottom: 1px dashed var(--line); }
-.sheet .tbar h3 { order: 1; margin: 0; font-size: .9rem; font-weight: 800; color: var(--accent); }
-.closebox { order: 2; background: none; border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; font-size: .74rem; color: var(--muted); }
-.closebox::before { content: "esc ✕"; }
-.sheet .wbody { padding: 12px; }
-.prompt { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding-left: 12px; }
-.prompt:focus-within { border-color: var(--accent); }
-.prompt > span { color: var(--accent); font-weight: 800; }
-.prompt .inp { border: 0; background: none; padding-left: 0; }
-.prompt .inp:focus-visible { outline: none; }
-.inp { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 11px 12px; font-size: 1rem; caret-color: var(--accent); }
-.inp::placeholder { color: var(--faint); }
-.inp::-webkit-search-cancel-button { filter: invert(.6); }
-.title-inp { font-size: 1.02rem; font-weight: 700; padding-block: 13px; }
-.hint { margin: 8px 2px 0; font-size: .76rem; color: var(--faint); }
+.shead { position: sticky; top: 0; z-index: 1; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 6px 6px 2px; background: var(--paper); }
+.shead h3 { margin: 0; font-size: 17px; font-weight: 700; }
+.txtbtn { justify-self: start; min-height: 44px; padding: 0 10px; font-weight: 600; font-size: 16px; color: var(--water); }
+.txtbtn.r { justify-self: end; font-weight: 700; }
+.sbody { padding: 8px 16px 18px; }
+.search { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 14px; border-radius: 12px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--rule); }
+.search:focus-within { box-shadow: inset 0 0 0 2px var(--water); }
+.search svg { width: 18px; height: 18px; flex: 0 0 auto; fill: none; stroke: var(--muted); stroke-width: 2.2; stroke-linecap: round; }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; font-size: 17px; outline: none; }
+.search input::placeholder { color: var(--faint); }
+.search input::-webkit-search-cancel-button { opacity: .6; }
+.locbtn { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; margin-top: 6px; font-weight: 600; font-size: 16px; color: var(--water); }
+.locbtn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.hint { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
 .hint.err { color: var(--poor); }
-.kbd { color: var(--muted); }
-.results { display: grid; margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); overflow: hidden; }
-.results:empty { display: none; }
-.results .hint { margin: 0; padding: 10px 12px; }
-.res { display: grid; gap: 2px; width: 100%; text-align: left; background: none; border: 0; border-top: 1px dashed var(--line); padding: 10px 12px; }
-.res:first-child { border-top: 0; }
-.res b { font-weight: 700; }
-.res span { font-size: .76rem; color: var(--muted); }
-.sugg { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; }
-.sugg p { width: 100%; margin: 0 0 2px; font-size: .7rem; color: var(--faint); letter-spacing: .07em; text-transform: uppercase; }
-.sugg button { border: 1px solid var(--line); background: none; border-radius: 6px; padding: 5px 9px; font-size: .8rem; font-weight: 700; color: var(--muted); }
-.locrow { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-.locrow .hint { margin: 0; }
-.picked { margin: 0 0 4px; font-size: .78rem; color: var(--muted); }
-.fl { display: block; margin: 14px 0 6px; font-size: .78rem; font-weight: 700; color: var(--muted); }
-.fl:first-child { margin-top: 2px; }
-.sfoot { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; margin-top: 14px; }
-.sfoot .btn.default { margin-left: auto; min-width: 112px; }
-.confirm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; padding: 10px; border: 1px dashed var(--poor); border-radius: 8px; font-size: .86rem; }
-
-.opts { display: flex; flex-wrap: wrap; gap: 6px; }
-.opts button { min-width: 50px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: none; font-weight: 800; font-size: .9rem; color: var(--muted); }
-.opts button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-wash); color: var(--accent); }
-.who { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.who button { display: grid; align-content: start; gap: 3px; padding: 10px; text-align: left; border: 1px solid var(--line); border-radius: 8px; background: none; font-weight: 800; font-size: .88rem; color: var(--muted); }
-.who button small { font-weight: 400; font-size: .74rem; line-height: 1.3; color: var(--faint); }
-.who button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-wash); color: var(--fg); }
-.who button[aria-pressed="true"] small { color: var(--muted); }
-.lim { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: .76rem; font-variant-numeric: tabular-nums; }
-.lim th, .lim td { padding: 6px 4px; border-top: 1px dashed var(--line); text-align: right; font-weight: 400; }
-.lim thead th { border-top: 0; color: var(--c); font-weight: 800; white-space: nowrap; }
+.rlist { margin: 10px -16px 0; padding: 0 16px; border-top: 1px solid var(--rule); }
+.rlist h4 { margin: 0; padding: 18px 0 6px; font-family: var(--cond); font-weight: 700; font-size: 15px; letter-spacing: .16em; text-transform: uppercase; }
+.rlist .hint { padding: 14px 0 4px; margin: 0; }
+.res { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 6px 0; border-bottom: 1px solid var(--rule-soft); text-align: left; }
+.res .tri { width: 12px; height: 11px; flex: 0 0 auto; fill: var(--height); }
+.res .rt { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.res .rt b { font-weight: 600; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.res .rt span { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.res .m { flex: 0 0 auto; font-size: 14px; font-style: italic; font-weight: 500; color: var(--height); font-variant-numeric: tabular-nums; }
+.res .plus { flex: 0 0 auto; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--water-wash); color: var(--water); }
+.res .plus svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
+.foot { margin: 0; padding-top: 16px; font-size: 13px; color: var(--muted); }
+.picked { margin: 0 0 2px; font-size: 13px; color: var(--muted); }
+.fl { display: block; margin: 16px 0 6px; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.inp { width: 100%; min-height: 48px; padding: 0 14px; border: 0; border-radius: 12px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--rule); font-size: 17px; }
+.inp:focus { outline: none; box-shadow: inset 0 0 0 2px var(--water); }
+.unit { position: relative; }
+.unit .inp { padding-right: 40px; -moz-appearance: textfield; appearance: textfield; }
+.unit .inp::-webkit-inner-spin-button, .unit .inp::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.unit span { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.danger { min-height: 44px; margin-top: 10px; font-weight: 600; font-size: 15px; color: var(--poor); }
+.confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--well); font-size: 15px; }
+.confirm span { margin-right: auto; }
+.sbtn { min-height: 40px; padding: 0 14px; border-radius: 10px; background: var(--surface); font-weight: 700; font-size: 14px; box-shadow: inset 0 0 0 1px var(--rule); }
+.sbtn.del { background: var(--poor); color: var(--paper); box-shadow: none; }
+.prose p { margin: 0 0 12px; font-size: 15px; line-height: 1.5; color: var(--muted); }
+.prose b { color: var(--ink); font-weight: 600; }
+.lim { width: 100%; border-collapse: collapse; margin: 4px 0 16px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.lim caption { text-align: left; padding-bottom: 6px; font-weight: 600; font-size: 14px; }
+.lim th, .lim td { padding: 7px 4px; border-top: 1px solid var(--rule-soft); text-align: right; font-weight: 400; }
+.lim thead th { border-top: 0; color: var(--c); font-weight: 700; white-space: nowrap; }
 .lim tbody th { text-align: left; color: var(--muted); }
-.pfoot { display: flex; justify-content: flex-end; margin-top: 14px; }
-.prose p { margin: 0 0 11px; font-size: .84rem; line-height: 1.5; color: var(--muted); }
-.prose b { color: var(--fg); }
 
 .toast {
-  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 20;
-  display: flex; gap: 14px; align-items: center; max-width: calc(100% - 32px);
-  background: var(--raise); color: var(--fg); border: 1px solid var(--accent); border-radius: 8px; padding: 10px 14px; font-size: .84rem; box-shadow: 0 10px 30px rgba(0,0,0,.5);
+  position: fixed; z-index: 20; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 16px; width: max-content; max-width: calc(100% - 32px);
+  padding: 12px 16px; border-radius: 12px; background: var(--ink); color: var(--paper); font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.25);
 }
 .toast span { overflow-wrap: anywhere; }
-.toast button { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 800; flex: 0 0 auto; }
-.status { margin-top: 22px; text-align: center; font-size: .74rem; color: var(--faint); }
-.status p { margin: 4px 0; }
-.status .linkbtn { padding: 2px 0; font-size: .74rem; }
+.toast button { flex: 0 0 auto; font-weight: 700; color: var(--toast-link); }
 
 @media (prefers-reduced-motion: no-preference) {
-  .cur { animation: blink 1.1s steps(1) infinite; }
-  @keyframes blink { 50% { opacity: 0; } }
-  .sheet { animation: drop .18s cubic-bezier(.2,.8,.2,1); }
-  @keyframes drop { from { transform: translateY(-14px); opacity: .4; } to { transform: none; opacity: 1; } }
+  .sheet { animation: drop .2s cubic-bezier(.2,.8,.2,1); }
+  @keyframes drop { from { transform: translateY(-12px); opacity: .5; } to { transform: none; opacity: 1; } }
 }
 </style>
 </head>
 <body>
 
-<div class="wrap">
-  <header class="menubar">
-    <span class="brand">&gt; hill/wx<span class="cur" aria-hidden="true"></span></span>
-    <span class="today" id="today"></span>
-  </header>
-
-  <section id="fcView">
-    <div class="sticky">
-      <div class="filters" id="spotChips" role="group" aria-label="Choose a spot"></div>
-    </div>
-    <div id="fcBody"></div>
-  </section>
-
-  <section id="spotsView" hidden></section>
-
-  <footer class="status" id="status"></footer>
+<div class="app">
+  <div class="spots gut" id="spotChips" role="group" aria-label="Your spots"></div>
+  <div class="days gut" id="dayStrip" role="group" aria-label="Choose a day"></div>
+  <main id="main"></main>
+  <footer class="status gut" id="status"></footer>
 </div>
-
-<nav class="tabbar" aria-label="Views">
-  <div class="in">
-    <button type="button" class="tab" data-view="fc" aria-pressed="true"><span data-px="tabCloud"></span>Forecast</button>
-    <button type="button" class="add" id="addBtn" aria-label="Add a spot"><svg viewBox="0 0 9 9" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true"><path d="M4 0h1v4h4v1H5v4H4V5H0V4h4z"/></svg></button>
-    <button type="button" class="tab" data-view="spots" aria-pressed="false"><span data-px="tabHill"></span>Spots</button>
-  </div>
-</nav>
 
 <div class="scrim" id="scrim" hidden></div>
 
-<form class="sheet" id="spotSheet" hidden autocomplete="off" aria-labelledby="spotTitle">
-  <div class="tbar">
-    <button type="button" class="closebox" data-close aria-label="Close"></button>
-    <h3 id="spotTitle">Add a spot</h3>
+<div class="sheet" id="addSheet" hidden role="dialog" aria-modal="true" aria-labelledby="addTitle">
+  <div class="shead">
+    <button type="button" class="txtbtn" data-close>Cancel</button>
+    <h3 id="addTitle">Add a spot</h3>
+    <span></span>
   </div>
-  <div class="wbody">
-    <div id="findStep">
-      <label for="q" class="sr">Search for a hill, town or trailhead</label>
-      <div class="prompt"><span aria-hidden="true">&gt;</span><input class="inp title-inp" type="search" id="q" maxlength="80" placeholder="Search a hill or town" enterkeyhint="search"></div>
-      <p class="hint">Or paste coordinates, like <span class="kbd">52.967, -6.464</span></p>
-      <div class="results" id="results" aria-live="polite"></div>
-      <div class="locrow"><button type="button" class="btn sm" id="locBtn">Use my location</button><p class="hint" id="locMsg"></p></div>
-    </div>
-    <div id="confirmStep" hidden>
-      <p class="picked" id="picked"></p>
-      <label class="fl" for="fName">Name</label>
-      <input class="inp" type="text" id="fName" maxlength="60">
-      <label class="fl" for="fElev">Forecast height, metres</label>
-      <input class="inp" type="number" id="fElev" inputmode="numeric" min="0" max="5000" step="1">
-      <p class="hint">Use the summit height for hill walks. Temperature, wind and freezing level are judged at this height.</p>
-      <div class="sfoot">
-        <button type="button" class="linkbtn" id="backBtn">Search again</button>
-        <button type="button" class="linkbtn danger" id="delBtn" hidden>Remove spot</button>
-        <button type="submit" class="btn default" id="saveBtn">Add spot</button>
+  <div class="sbody">
+    <form id="findForm" role="search" autocomplete="off">
+      <label for="q" class="sr">Search for a hill, lake or town</label>
+      <div class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <input id="q" type="search" maxlength="80" placeholder="Search a hill, lake or town" enterkeyhint="search">
       </div>
-      <div class="confirm" id="confirm" hidden>
-        Remove this spot?
-        <button type="button" class="btn sm inv" id="confirmYes">Remove</button>
-        <button type="button" class="btn sm" id="confirmNo">Keep it</button>
-      </div>
+    </form>
+    <button type="button" class="locbtn" id="locBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"></path><circle cx="12" cy="9.5" r="2.5"></circle></svg>Use my location</button>
+    <p class="hint" id="locMsg" hidden></p>
+    <div class="rlist" id="results" aria-live="polite"></div>
+    <p class="foot">Spots are forecast at the summit height. You can paste coordinates too, like 52.967, −6.464.</p>
+  </div>
+</div>
+
+<form class="sheet" id="editSheet" hidden autocomplete="off" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+  <div class="shead">
+    <button type="button" class="txtbtn" data-close>Cancel</button>
+    <h3 id="editTitle">Edit spot</h3>
+    <button type="submit" class="txtbtn r">Save</button>
+  </div>
+  <div class="sbody">
+    <p class="picked" id="picked"></p>
+    <label class="fl" for="fName">Name</label>
+    <input class="inp" type="text" id="fName" maxlength="60">
+    <label class="fl" for="fElev">Forecast height</label>
+    <div class="unit"><input class="inp" type="number" id="fElev" inputmode="numeric" min="0" max="5000" step="1"><span aria-hidden="true">m</span></div>
+    <p class="hint">Use the summit height for hill walks. Wind, temperature and freezing level are judged at this height.</p>
+    <button type="button" class="danger" id="delBtn">Remove this spot</button>
+    <div class="confirm" id="confirm" hidden>
+      <span>Remove it from your spots?</span>
+      <button type="button" class="sbtn del" id="confirmYes">Remove</button>
+      <button type="button" class="sbtn" id="confirmNo">Keep it</button>
     </div>
   </div>
 </form>
 
-<div class="sheet" id="planSheet" hidden role="dialog" aria-labelledby="planTitle">
-  <div class="tbar">
-    <button type="button" class="closebox" data-close aria-label="Close"></button>
-    <h3 id="planTitle">Plan the walk</h3>
-  </div>
-  <div class="wbody">
-    <span class="fl">Walk length</span>
-    <div class="opts" id="durOpts" role="group" aria-label="Walk length"></div>
-    <span class="fl">Who's going</span>
-    <div class="who" id="whoOpts" role="group" aria-label="Who's going"></div>
-    <div id="limits"></div>
-    <div class="pfoot"><button type="button" class="btn default" data-close>Done</button></div>
-  </div>
-</div>
-
-<div class="sheet" id="aboutSheet" hidden role="dialog" aria-labelledby="aboutTitle">
-  <div class="tbar">
-    <button type="button" class="closebox" data-close aria-label="Close"></button>
+<div class="sheet" id="aboutSheet" hidden role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+  <div class="shead">
+    <span></span>
     <h3 id="aboutTitle">How ratings work</h3>
+    <button type="button" class="txtbtn r" data-close>Done</button>
   </div>
-  <div class="wbody prose">
+  <div class="sbody prose">
     <p>Every hour gets a rating from the forecast at your spot's height: <b>good</b>, <b>fair</b>, <b>poor</b> or <b>no go</b>. A walk is only as good as its worst hour. The <b>best window</b> is the stretch of daylight, of your walk length, with the best rating, finishing by sunset.</p>
     <p><b>Wind on the tops</b> is estimated from the forecast wind around 750 m up, because exposed summits catch far more wind than the valley forecast. Gusts are scaled from that. Spots under 250 m use the normal 10 m wind.</p>
     <p><b>Feels like</b> includes wind chill from that summit wind. Freezing level below the top means ice or snow is possible. Low cloud over 80% means the tops are likely in cloud.</p>
-    <p><b>Scout group</b> uses stricter limits than <b>Just me</b>. You can see both sets under Plan.</p>
+    <div id="limits"></div>
     <p>This is a planning aid, not a mountain forecast. Check Met Éireann warnings, tell someone your route, and look at the sky on the day.</p>
-    <p>To open it like an app, use your browser's Share menu and choose Add to Home Screen.</p>
+    <p>To open it like an app, use your browser's menu and choose Add to Home screen.</p>
     <p><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a>, licensed CC BY 4.0.</p>
   </div>
 </div>
@@ -399,16 +355,17 @@ a { color: var(--muted); text-underline-offset: 3px; text-decoration-color: var(
 "use strict";
 // ---------- config ----------
 const LV = [
-  { key: "good", name: "Good",  g: "✓", c: "var(--good)", line: "Good conditions for the tops." },
-  { key: "fair", name: "Fair",  g: "~", c: "var(--fair)", line: "Fine with care. Check the points below." },
-  { key: "poor", name: "Poor",  g: "!", c: "var(--poor)", line: "Hard going on the tops. A lower route may be better." },
-  { key: "nogo", name: "No go", g: "✕", c: "var(--poor)", line: "Not a day for the tops. Pick a low-level walk or another day." }
+  { key: "good", name: "Good",  g: "✓", c: "var(--good)", f: "var(--good-f)", line: "Good conditions for the tops." },
+  { key: "fair", name: "Fair",  g: "~", c: "var(--fair)", f: "var(--fair-f)", line: "Fine with care. Check the points below." },
+  { key: "poor", name: "Poor",  g: "!", c: "var(--poor)", f: "var(--poor-f)", line: "Hard going on the tops. A lower route may be better." },
+  { key: "nogo", name: "No go", g: "✕", c: "var(--nogo)", f: "var(--nogo-f)", line: "Not a day for the tops. Pick a low-level walk or another day." }
 ];
 const PROFILES = {
-  group: { name: "Scout group", blurb: "Stricter limits for leading young people", gust: [40, 55, 70], feels: [3, -3], rain: [0.5, 2], strict: true },
-  me:    { name: "Just me",     blurb: "Limits for an experienced hill walker",    gust: [50, 65, 80], feels: [0, -6], rain: [0.7, 3], strict: false }
+  group: { name: "Scout group", gust: [40, 55, 70], feels: [3, -3], rain: [0.5, 2], strict: true },
+  me:    { name: "Just me",     gust: [50, 65, 80], feels: [0, -6], rain: [0.7, 3], strict: false }
 };
-const DURS = [2, 3, 4, 5, 6, 8];
+const DURS = [{ h: 2, name: "Short" }, { h: 4, name: "Half day" }, { h: 6, name: "Full day" }];
+const snapDur = d => d <= 2 ? 2 : d <= 4 ? 4 : 6;
 const DEFAULT_SPOTS = [
   { id: "lugnaquilla", name: "Lugnaquilla", region: "Wicklow", lat: 52.9672, lon: -6.4644, elev: 925 },
   { id: "djouce", name: "Djouce", region: "Wicklow", lat: 53.1306, lon: -6.2397, elev: 725 },
@@ -416,7 +373,18 @@ const DEFAULT_SPOTS = [
   { id: "loughdan", name: "Lough Dan", region: "Wicklow", lat: 53.0700, lon: -6.2780, elev: 230 },
   { id: "croaghpatrick", name: "Croagh Patrick", region: "Mayo", lat: 53.7597, lon: -9.6586, elev: 764 }
 ];
-const SUGGEST = ["Carrauntoohil", "Galtymore", "Mweelrea", "Errigal", "Slieve Donard", "Mullaghcleevaun", "Tonelagee", "Kippure", "Glendalough", "Ben Bulben"];
+const POPULAR = [
+  { name: "Carrauntoohil", region: "Kerry", lat: 51.9993, lon: -9.7428, elev: 1038 },
+  { name: "Galtymore", region: "Galtees, Tipperary", lat: 52.3658, lon: -8.1786, elev: 918 },
+  { name: "Slieve Donard", region: "Mournes, Down", lat: 54.1803, lon: -5.9206, elev: 850 },
+  { name: "Tonelagee", region: "Wicklow", lat: 53.0569, lon: -6.3886, elev: 817 },
+  { name: "Mweelrea", region: "Mayo", lat: 53.6375, lon: -9.8303, elev: 814 },
+  { name: "Kippure", region: "Dublin and Wicklow", lat: 53.1772, lon: -6.3317, elev: 757 },
+  { name: "Errigal", region: "Donegal", lat: 55.0342, lon: -8.1117, elev: 751 },
+  { name: "Lugnaquilla", region: "Wicklow", lat: 52.9672, lon: -6.4644, elev: 925 },
+  { name: "Djouce", region: "Wicklow", lat: 53.1306, lon: -6.2397, elev: 725 },
+  { name: "Croagh Patrick", region: "Mayo", lat: 53.7597, lon: -9.6586, elev: 764 }
+];
 const HOURLY = ["temperature_2m", "apparent_temperature", "precipitation", "precipitation_probability", "weather_code", "cloud_cover_low", "visibility", "wind_speed_10m", "wind_gusts_10m", "wind_direction_10m", "freezing_level_height"];
 const HOURLY_MIN = ["temperature_2m", "apparent_temperature", "precipitation", "precipitation_probability", "weather_code", "cloud_cover_low", "wind_speed_10m", "wind_gusts_10m", "wind_direction_10m"];
 const DAILY = ["sunrise", "sunset", "uv_index_max"];
@@ -424,57 +392,46 @@ const STALE = 30 * 60 * 1000;
 // A request that never leaves the device is usually a preview (like Claude's) that blocks outside data.
 const FRAMED = (() => { try { return window.self !== window.top; } catch (_) { return true; } })();
 const BLOCKED_MSG = FRAMED
-  ? "This preview blocks live weather data. Open the file from a link in Safari or Chrome instead."
-  : "Couldn't reach Open-Meteo. If you're viewing this inside Claude or another app's preview, open it in Safari or Chrome instead. Otherwise, check your connection.";
+  ? "This preview blocks live weather data. Open the link in Chrome or Safari instead."
+  : "Couldn't reach Open-Meteo. Check your connection, then tap Try again.";
 const FEATURE = { MT: "mountain", MTS: "mountains", HLL: "hill", HLLS: "hills", PK: "peak", PKS: "peaks", RDGE: "ridge", LK: "lake", LKS: "lakes", VAL: "valley", PASS: "pass", CLF: "cliff", SPUR: "spur", UPLD: "upland", PLAT: "plateau", FRST: "forest", PRK: "park", ISL: "island", BCH: "beach", BAY: "bay", PPL: "town", PPLA: "town", PPLA2: "town", PPLA3: "town", PPLC: "city", PPLX: "area", PPLL: "village" };
 
-// ---------- pixel icons ----------
-const CT = ["............", "......ccc...", "..cc.ccccc..", ".ccccccccc..", ".cccccccccc.", "cccccccccccc", ".cccccccccc."];
-const BLANK = "............";
-function moonRows() {
-  const out = [];
-  for (let y = 0; y < 12; y++) {
-    let s = "";
-    for (let x = 0; x < 12; x++) {
-      const a = (x + .5 - 6) ** 2 + (y + .5 - 6) ** 2 <= 21;
-      const b = (x + .5 - 8.4) ** 2 + (y + .5 - 4.4) ** 2 <= 17;
-      s += a && !b ? "m" : ".";
+// ---------- drawings ----------
+const TRI = `<svg viewBox="0 0 10 9" aria-hidden="true"><path d="M5 0L10 9H0z"></path></svg>`;
+const CHEV = `<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>`;
+const PLUS = `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>`;
+const CONTOURS = (() => {
+  let seed = 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  let out = "";
+  for (let i = 0; i < 8; i++) {
+    const base = 18 + i * 19, ph = [rnd() * 6.28, rnd() * 6.28, rnd() * 6.28], amp = [3 + i * 1.2, 2 + i * .8, 1.5 + i * .5];
+    let d = "";
+    for (let k = 0; k < 56; k++) {
+      const t = 2 * Math.PI * k / 56;
+      let r = base + amp[0] * Math.sin(2 * t + ph[0]) + amp[1] * Math.sin(3 * t + ph[1]) + amp[2] * Math.sin(5 * t + ph[2]);
+      r *= 1 + .35 * Math.cos(t - .6);
+      d += (k ? "L" : "M") + (292 + r * Math.cos(t) * 1.25).toFixed(1) + " " + (58 + r * Math.sin(t)).toFixed(1);
     }
-    out.push(s);
+    out += `<path d="${d}Z" stroke-width="${i === 4 ? 1.8 : 1}" opacity="${i === 4 ? .45 : .35}"></path>`;
   }
-  return out;
-}
-const PIX = {
-  sun: [".....yy.....", ".y...yy...y.", "..y......y..", "....yyyy....", "...yyyyyy...", "yy.yyyyyy.yy", "yy.yyyyyy.yy", "...yyyyyy...", "....yyyy....", "..y......y..", ".y...yy...y.", ".....yy....."],
-  moon: moonRows(),
-  part: [BLANK, "..y..y......", "...yy.......", ".yyyyyy.....", "..yyyy......", ".yyyy.ccc...", "..y.ccccccc.", "...cccccccc.", "..cccccccccc", "..cccccccccc", "...cccccccc.", BLANK],
-  cloud: [BLANK, BLANK, BLANK, ...CT.slice(1), BLANK, BLANK, BLANK],
-  fog: [BLANK, BLANK, "..cccccccc..", BLANK, "cccccccccc..", BLANK, "..cccccccccc", BLANK, "cccccccccc..", BLANK, "...cccccc...", BLANK],
-  drizzle: [...CT, BLANK, "...b.....b..", BLANK, "......b.....", BLANK],
-  rain: [...CT, BLANK, "..b...b...b.", ".b...b...b..", "....b...b...", "...b...b...."],
-  showers: ["..y..y......", "...yy.......", ".yyyyy.ccc..", "..yyy.ccccc.", ".yy.cccccccc", "...ccccccccc", "..cccccccccc", "...cccccccc.", BLANK, "...b...b..b.", "..b...b..b..", BLANK],
-  snow: [...CT, BLANK, "..w...w...w.", BLANK, "....w...w...", BLANK],
-  thunder: [...CT, ".....zz.....", "....zz......", "...zzzzz....", ".....zz.....", "....z......."],
-  tabCloud: [".........", "....xxx..", "..xx.xxx.", ".xxxxxxx.", "xxxxxxxxx", "xxxxxxxxx", ".xxxxxxx.", ".........", "........."],
-  tabHill: [".........", "...x.....", "..xxx....", "..xxx.x..", ".xxxxxxx.", ".xxxxxxx.", "xxxxxxxxx", "xxxxxxxxx", "........."]
+  return `<svg class="contours" viewBox="-16 0 390 440" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">${out}</svg>`;
+})();
+const CLOUD = "M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6 9.5 4.25 4.25 0 0 0 7 18z";
+const CLOUD_HI = "M7 14h10a3.5 3.5 0 0 0 .4-6.98A5 5 0 0 0 7.6 7.2 3.4 3.4 0 0 0 7 14z";
+const SKY = {
+  sun: `<circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"></path>`,
+  moon: `<path d="M20 14.2A8 8 0 1 1 9.8 4a6.4 6.4 0 0 0 10.2 10.2z"></path>`,
+  part: `<path d="M8 3v1.2M3 8h1.2M4.5 4.5l.9.9M11.5 4.5l-.9.9"></path><path d="M5 10.6A3.2 3.2 0 1 1 10.9 7.3"></path><path d="M9 20h8a3.5 3.5 0 0 0 .4-6.98A5 5 0 0 0 8.1 12.8 3.6 3.6 0 0 0 9 20z"></path>`,
+  cloud: `<path d="${CLOUD}"></path>`,
+  fog: `<path d="M4 9h16M6 13h14M4 17h12"></path>`,
+  drizzle: `<path d="${CLOUD_HI}"></path><path d="M9 18v.01M13 19.5v.01M17 18v.01"></path>`,
+  rain: `<path d="${CLOUD_HI}"></path><path d="M9 17l-1 3M13 17l-1 3M17 17l-1 3"></path>`,
+  showers: `<path d="${CLOUD_HI}"></path><path d="M10 17l-1 3M15 17l-1 3"></path>`,
+  snow: `<path d="${CLOUD_HI}"></path><path d="M9 16.8v3.4M7.3 18.5h3.4M15 16.8v3.4M13.3 18.5h3.4"></path>`,
+  thunder: `<path d="${CLOUD_HI}"></path><path d="M12.5 15l-2 3.5h3l-2 3.5"></path>`
 };
-const PXC = { y: "var(--sun)", c: "var(--muted)", b: "var(--rain)", w: "var(--snow)", m: "var(--muted)", z: "var(--sun)", x: "currentColor" };
-function pxSvg(rows) {
-  const byC = {};
-  rows.forEach((row, y) => {
-    for (let x = 0; x < row.length;) {
-      const ch = row[x];
-      if (ch === ".") { x++; continue; }
-      let n = 1;
-      while (row[x + n] === ch) n++;
-      (byC[ch] ||= []).push(`M${x} ${y}h${n}v1h-${n}z`);
-      x += n;
-    }
-  });
-  const paths = Object.entries(byC).map(([c, d]) => `<path d="${d.join("")}" style="fill:${PXC[c]}"/>`).join("");
-  return `<svg class="px" viewBox="0 0 ${rows[0].length} ${rows.length}" shape-rendering="crispEdges" aria-hidden="true">${paths}</svg>`;
-}
-const ICON = Object.fromEntries(Object.entries(PIX).map(([k, rows]) => [k, pxSvg(rows)]));
+const skySvg = k => k && SKY[k] ? `<svg viewBox="0 0 24 24" aria-hidden="true">${SKY[k]}</svg>` : "";
 function sky(code, isDay) {
   if (code == null) return { l: "No data", i: null };
   if (code === 0) return { l: "Clear", i: isDay ? "sun" : "moon" };
@@ -486,7 +443,7 @@ function sky(code, isDay) {
   if (code === 66 || code === 67) return { l: "Freezing rain", i: "rain" };
   if (code >= 61 && code <= 65) return { l: code === 65 ? "Heavy rain" : "Rain", i: "rain" };
   if (code >= 71 && code <= 77) return { l: "Snow", i: "snow" };
-  if (code >= 80 && code <= 82) return { l: code === 82 ? "Heavy showers" : "Showers", i: isDay ? "showers" : "rain" };
+  if (code >= 80 && code <= 82) return { l: code === 82 ? "Heavy showers" : "Showers", i: "showers" };
   if (code === 85 || code === 86) return { l: "Snow showers", i: "snow" };
   if (code >= 95) return { l: "Thunder", i: "thunder" };
   return { l: "Cloudy", i: "cloud" };
@@ -505,9 +462,14 @@ const compass = d => d == null ? "" : ["N", "NE", "E", "SE", "S", "SW", "W", "NW
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const sum = a => a.reduce((x, y) => x + y, 0);
 const dateOf = d => new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10));
-const wdShort = d => dateOf(d).toLocaleDateString("en-IE", { weekday: "short" });
-const dayLong = d => dateOf(d).toLocaleDateString("en-IE", { weekday: "short", day: "numeric", month: "short" });
-const dayLabel = (i, d) => i === 0 ? "Today" : i === 1 ? "Tomorrow" : dayLong(d);
+const wdLong = d => dateOf(d).toLocaleDateString("en-IE", { weekday: "long" });
+const dayFull = (i, d) => {
+  const dt = dateOf(d);
+  const long = `${wdLong(d)} ${dt.getDate()} ${dt.toLocaleDateString("en-IE", { month: "long" })}`;
+  return i === 0 ? `Today, ${long}` : i === 1 ? `Tomorrow, ${long}` : long;
+};
+const dayWord = (i, d) => i === 0 ? "today" : i === 1 ? "tomorrow" : "on " + wdLong(d);
+const dayCap = (i, d) => i === 0 ? "Today" : i === 1 ? "Tomorrow" : wdLong(d);
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} },
@@ -648,22 +610,15 @@ function plansFor(m) {
   const now = nowIn(m);
   return m.days.map((_, i) => plan(m, i, settings.dur, settings.who, now));
 }
-function bestOf(ps) {
-  let b = null;
-  for (const p of ps) if (p && !p.none && (!b || p.level < b.level || (p.level === b.level && p.score < b.score - 0.05))) b = p;
-  return b;
-}
 
 // What drives the rating, worst first
 function why(p, m) {
   const hs = p.hs, out = [];
   const lvOf = k => Math.max(...hs.map(x => x.ev.f[k]));
   const span = a => `${hh(a[0].h)}–${hh(a[a.length - 1].h + 1)}`;
-  // wind
   const wx = hs.reduce((a, x) => x.ev.tg > a.ev.tg ? x : a, hs[0]);
   const avgW = sum(hs.map(x => x.ev.tw)) / hs.length;
   out.push({ lv: lvOf("wind"), t: `Gusts to ${rd(wx.ev.tg)} km/h on the tops`, s: `${compass(wx.dir) ? compass(wx.dir) + " wind, " : ""}averaging ${rd(avgW)} km/h${m.aloft || m.elev < 250 ? "" : ". Valley forecast only: expect more on top"}` });
-  // rain
   const tot = sum(hs.map(x => x.p || 0)), maxpp = Math.max(...hs.map(x => x.pp || 0));
   const wet = hs.filter(x => (x.p || 0) >= 0.2);
   if (tot < 0.2) out.push({ lv: lvOf("rain"), t: maxpp >= 40 ? "Mostly dry" : "Dry", s: `chance of rain up to ${maxpp}%` });
@@ -671,20 +626,16 @@ function why(p, m) {
     const hv = hs.reduce((a, x) => (x.p || 0) > (a.p || 0) ? x : a, hs[0]);
     out.push({ lv: lvOf("rain"), t: `${tot.toFixed(1)} mm of rain over the walk`, s: `${wet.length === hs.length ? "on and off throughout" : "from " + hh(wet[0].h)}, heaviest around ${hh(hv.h)}` });
   }
-  // cold
   const cx = hs.reduce((a, x) => (x.ev.feels ?? 99) < (a.ev.feels ?? 99) ? x : a, hs[0]);
   const temps = hs.map(x => x.temp).filter(t => t != null);
   out.push({ lv: lvOf("cold"), t: `Feels like ${rd(cx.ev.feels)}°C on top`, s: temps.length ? `air ${rd(Math.min(...temps))} to ${rd(Math.max(...temps))}°C at ${m.elev} m` : "" });
-  // cloud
   const cl = hs.filter(x => x.ev.f.cloud);
   const vis = hs.map(x => x.vis).filter(x => x != null);
   const minVis = vis.length ? Math.min(...vis) : null;
-  if (cl.length) out.push({ lv: lvOf("cloud"), t: cl.length === hs.length ? "Tops likely in cloud all walk" : `Tops likely in cloud ${span(cl)}`, s: minVis != null && minVis < 5000 ? `visibility down to ${minVis < 1000 ? Math.round(minVis / 10) * 10 + " m" : (minVis / 1000).toFixed(1) + " km"}` : "navigate by map and compass" });
+  if (cl.length) out.push({ lv: lvOf("cloud"), t: cl.length === hs.length ? "Tops in cloud all walk" : `Tops in cloud ${span(cl)}`, s: minVis != null && minVis < 5000 ? `visibility down to ${minVis < 1000 ? Math.round(minVis / 10) * 10 + " m" : (minVis / 1000).toFixed(1) + " km"}` : "navigate by map and compass" });
   else if (hs.some(x => x.low != null)) out.push({ lv: 0, t: "Tops clear of low cloud", s: `low cloud up to ${Math.max(...hs.map(x => x.low ?? 0))}%` });
-  // ice and snow
   const fz = hs.filter(x => x.ev.freezing);
   if (fz.length) out.push({ lv: lvOf("ice"), t: fz.some(x => x.ev.snowy) ? "Snow or ice likely on top" : "Freezing on top: watch for ice", s: `freezing level ${rd(Math.min(...fz.map(x => x.fz)))} m, top ${m.elev} m` });
-  // storms
   const st = hs.filter(x => x.ev.f.storm);
   if (st.length) out.push({ lv: lvOf("storm"), t: st.some(x => x.code >= 95) ? `Thunder possible from ${hh(st[0].h)}` : `Freezing rain from ${hh(st[0].h)}`, s: "stay off high, open ground" });
   if (hs.some(x => x.ev.f.heat)) out.push({ lv: 1, t: "Hot for walking", s: "carry extra water" });
@@ -709,7 +660,7 @@ function kit(p, m) {
 }
 
 // ---------- state ----------
-let spots = [], sel = null, selDay = 0, view = "fc", showAll = false, seeded = false;
+let spots = [], sel = null, selDay = 0, autoDay = true, showAll = false, hoursOpen = false;
 let settings = { dur: 4, who: "group" };
 const fc = {};        // spot id -> { key, at, m, loading, err }
 const inflight = {};
@@ -769,13 +720,28 @@ async function loadAll(force) {
 }
 
 // ---------- render ----------
+function settleDay() {
+  const m = fc[sel]?.m;
+  if (!m) return;
+  if (autoDay) {
+    // In the evening there's no walk left today, so open on tomorrow.
+    const p0 = plan(m, 0, settings.dur, settings.who, nowIn(m));
+    selDay = p0 && p0.none === "late" && m.days.length > 1 ? 1 : 0;
+  }
+  selDay = clamp(selDay, 0, m.days.length - 1);
+}
+function focusKey() {
+  const a = document.activeElement;
+  if (!a || a === document.body || !a.closest("#spotChips, #dayStrip, #main, #status")) return null;
+  for (const k of ["spot", "day", "dur", "who", "edit"]) if (a.dataset[k] != null) return `[data-${k}="${CSS.escape(a.dataset[k])}"]`;
+  for (const k of ["hours", "allhours", "refresh", "about", "add"]) if (a.hasAttribute("data-" + k)) return `[data-${k}]`;
+  return null;
+}
 function render() {
-  $("today").textContent = new Date().toLocaleDateString("en-IE", { weekday: "short", day: "numeric", month: "short" });
-  document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === view));
-  $("fcView").hidden = view !== "fc";
-  $("spotsView").hidden = view !== "spots";
-  if (view === "fc") { const m = fc[sel]?.m; if (m) selDay = Math.min(selDay, m.days.length - 1); renderChips(); renderFc(); } else renderSpots();
-  renderStatus();
+  const fk = focusKey();
+  settleDay();
+  renderChips(); renderDays(); renderMain(); renderStatus();
+  if (fk) document.querySelector(`#spotChips ${fk}, #dayStrip ${fk}, #main ${fk}, #status ${fk}`)?.focus({ preventScroll: true });
 }
 function keepScroll(el, fn) { const x = el.scrollLeft; fn(); el.scrollLeft = x; }
 
@@ -791,84 +757,105 @@ function renderChips() {
       if (p && !p.none) { g = LV[p.level].g; c = LV[p.level].c; nm = LV[p.level].name; }
       else nm = p?.none === "late" ? "too late today" : "not enough daylight";
     }
-    return `<button type="button" class="fchip" data-spot="${s.id}" aria-pressed="${s.id === sel}" aria-label="${esc(s.name)}: ${esc(nm)}"><b class="cg" style="color:${c}" aria-hidden="true">${g}</b>${esc(s.name)}</button>`;
-  }).join("");
+    return `<button type="button" class="chip" data-spot="${s.id}" aria-pressed="${s.id === sel}" aria-label="${esc(s.name)}: ${esc(nm)}"><b class="g" style="color:${c}" aria-hidden="true">${g}</b>${esc(s.name)}</button>`;
+  }).join("") + `<button type="button" class="chip add" data-add>${PLUS}Add</button>`;
   keepScroll($("spotChips"), () => { $("spotChips").innerHTML = html; });
 }
 
-function renderFc() {
+function renderDays() {
+  const m = fc[sel]?.m;
+  if (!m) { $("dayStrip").innerHTML = ""; return; }
+  $("dayStrip").innerHTML = plansFor(m).map((p, i) => {
+    const d = m.days[i], ok = p && !p.none, L = ok ? LV[p.level] : null;
+    const wd = i === 0 ? "Today" : dateOf(d.d).toLocaleDateString("en-IE", { weekday: "short" });
+    const lab = `${dayCap(i, d.d)}: ${ok ? `${L.name}, ${hh(p.s)} to ${hh(p.e)}` : p?.none === "late" ? "too late to start" : "not enough daylight"}`;
+    return `<button type="button" class="day${ok ? "" : " off"}" data-day="${i}" aria-pressed="${selDay === i}" aria-label="${esc(lab)}">
+      <span class="wd">${esc(wd)}</span><span class="dn num">${+d.d.slice(8, 10)}</span>
+      <span class="g" style="color:${ok ? L.c : "var(--faint)"}" aria-hidden="true">${ok ? L.g : "·"}</span></button>`;
+  }).join("");
+}
+
+function nameRow(s) {
+  return `<div class="name"><h1>${esc(s.name)}</h1><span class="ht">${TRI}<span class="sr">height </span>${s.elev}<span class="sr"> metres</span></span>
+    <button type="button" class="edit" data-edit="${s.id}" aria-label="Edit ${esc(s.name)}">Edit</button></div>`;
+}
+
+function renderMain() {
   const s = cur();
   if (!s) {
-    $("fcBody").innerHTML = `<section class="win focusbox"><div class="tbar"><h2>No spots yet</h2></div><div class="wbody">
-      <p class="errp">Add a hill, a town or your location to see when it's good to walk.</p>
-      <button type="button" class="btn default" data-add>Add a spot</button></div></section>`;
+    $("main").innerHTML = `<section class="hero gut">${CONTOURS}
+      <div class="hd"><h1 class="empty-h">Add a hill to start</h1><span class="when">See when it's good to walk, and what to pack.</span></div>
+      <button type="button" class="primary" data-add>Add a spot</button></section>`;
     return;
   }
   const S = fc[s.id] || {};
   if (!S.m) {
-    $("fcBody").innerHTML = `<section class="win focusbox"><div class="tbar"><h2>${esc(s.name)}</h2></div>
-      <button type="button" class="tbar-r" data-edit="${s.id}" aria-label="Edit ${esc(s.name)}">${s.elev} m · <u>edit</u></button>
-      <div class="wbody">${S.err
-        ? `<p class="errp">${esc(S.err)}</p><button type="button" class="btn sm" data-refresh>Try again</button>`
-        : `<p class="loading">Fetching the forecast for ${s.elev} m <span class="cur" aria-hidden="true"></span></p>`}</div></section>`;
+    $("main").innerHTML = `<section class="hero gut">${CONTOURS}<div class="hd">${nameRow(s)}</div>
+      ${S.err ? `<p class="errp">${esc(S.err)}</p><button type="button" class="primary" data-refresh>Try again</button>`
+              : `<p class="loading">Getting the forecast for ${s.elev} m…</p>`}</section>`;
     return;
   }
   const m = S.m, now = nowIn(m);
-  const p = plan(m, Math.min(selDay, m.days.length - 1), settings.dur, settings.who, now);
-  $("fcBody").innerHTML = verdictBox(s, m, p, now) + weekBox(m) + daylightBox(p, now) + hoursBox(m, p, now) + (p.none ? "" : kitBox(p, m));
+  const p = plan(m, selDay, settings.dur, settings.who, now);
+  $("main").innerHTML = heroBox(s, m, p, now) + choicesBox() + (p.none ? "" : whyBox(p, m) + kitBox(p, m)) + hoursBox(m, p, now);
 }
 
-function weekBox(m) {
-  const rows = plansFor(m).map((p, i) => {
-    const d = m.days[i], ok = p && !p.none, L = ok ? LV[p.level] : null;
-    let stats;
-    if (ok) {
-      const g = Math.max(...p.hs.map(x => x.ev.tg)), f = Math.min(...p.hs.map(x => x.ev.feels ?? 99)), r = sum(p.hs.map(x => x.p || 0));
-      stats = `gusts ${rd(g)} km/h · feels ${rd(f)}° · ${r < 0.2 ? "dry" : r.toFixed(1) + " mm"}`;
-    } else stats = p?.none === "late" ? "too late to start today" : "not enough daylight";
-    const day = i === 0 ? "Today" : i === 1 ? "Tomorrow" : `${wdShort(d.d)} ${+d.d.slice(8, 10)}`;
-    return `<button type="button" class="wrow" data-day="${i}" data-scroll aria-pressed="${selDay === i}" style="--c:${ok ? L.c : "var(--faint)"}">
-      <span class="wd">${esc(day)}</span>
-      <span class="wr"><b aria-hidden="true">${ok ? L.g : "·"}</b>${ok ? L.name : "–"}</span>
-      <span class="ww num">${ok ? `${hh(p.s)}–${hh(p.e)}` : ""}</span>
-      <span class="ws">${esc(stats)}</span></button>`;
-  }).join("");
-  return `<section class="win" aria-labelledby="wkt"><div class="tbar"><h2 id="wkt">This week</h2></div><div class="wlist">${rows}</div></section>`;
-}
-
-function verdictBox(s, m, p, now) {
-  const P = PROFILES[settings.who], d = p.day;
-  const head = `<div class="fhead"><p><b>${esc(dayLabel(p.di, d.d))}</b> · ${settings.dur} h walk · ${esc(P.name)}</p><button type="button" class="btn sm" data-plan>Plan</button></div>`;
+function heroBox(s, m, p, now) {
+  const d = p.day;
   let main;
   if (p.none) {
     let next = null;
     for (let j = p.di + 1; j < m.days.length && !next; j++) { const q = plan(m, j, settings.dur, settings.who, now); if (q && !q.none) next = q; }
-    main = `<div class="vhead"><span class="vword muted">${p.none === "late" ? "Too late" : "Too short"}</span></div>
-      <p class="vnote">${p.none === "late"
-        ? `Not enough light left today for a ${settings.dur} h walk. Sunset is ${fmtT(d.set)}.`
-        : `Only ${fmtDur(d.set - d.rise)} of daylight, less than a ${settings.dur} h walk. Try a shorter walk under Plan.`}</p>
-      ${next ? `<button type="button" class="nextday" data-day="${next.di}" style="--c:${LV[next.level].c}"><span class="g" aria-hidden="true">${LV[next.level].g}</span>${esc(dayLabel(next.di, next.day.d))}: ${LV[next.level].name}, ${hh(next.s)}–${hh(next.e)}</button>` : ""}`;
+    main = `<div class="verdict" style="--c:var(--muted)"><span class="vword long">${p.none === "late" ? "Too late" : "Too short"}</span></div>
+      <p class="vline">${p.none === "late"
+        ? `Not enough light left today for a ${settings.dur} hour walk. Sunset is ${fmtT(d.set)}.`
+        : `Only ${fmtDur(d.set - d.rise)} of daylight. Try a shorter walk below.`}</p>
+      ${next ? `<button type="button" class="alt" data-day="${next.di}" style="--c:${LV[next.level].c}"><b class="g" aria-hidden="true">${LV[next.level].g}</b>
+        <span><b>${esc(dayCap(next.di, next.day.d))} is ${LV[next.level].name.toLowerCase()}</b><small>, ${hh(next.s)}–${hh(next.e)}</small></span>${CHEV}</button>` : ""}
+      ${hourStrip(m, p, now)}`;
   } else {
     const L = LV[p.level];
-    main = `<div class="vhead" style="--c:${L.c}">
-        <div class="vleft"><span class="vtag" aria-hidden="true">[${L.g}]</span><span class="vword">${L.name}</span></div>
-        <div class="vwin"><span class="lbl">Best window</span><b class="num">${hh(p.s)}–${hh(p.e)}</b><small>ends ${fmtDur(d.set - p.e)} before sunset</small></div>
-      </div>
-      <p class="vnote">${esc(L.line)}</p>`;
+    main = `<div><div class="verdict" style="--c:${L.c}"><span class="badge" aria-hidden="true">${L.g}</span><span class="vword">${L.name}</span></div></div>
+      <p class="vline">${esc(L.line)}</p>
+      <div class="win"><b class="num">${hh(p.s)}–${hh(p.e)}</b><span>${p.level === 3 ? "least bad" : "best"} ${settings.dur} hours</span></div>
+      ${hourStrip(m, p, now)}`;
   }
+  const latest = d.set - settings.dur;
+  const start = latest < d.rise ? "" : p.isToday && now.f > latest ? " · Too late to start" : ` · Start by <b>${fmtT(latest)}</b>`;
+  let light = "";
+  if (p.isToday && now.f > d.rise && now.f < d.set) light = ` · ${fmtDur(d.set - now.f)} of light left`;
   let nowLine = "";
   if (p.isToday) {
     const x = (m.byDay[now.d] || [])[now.h];
-    if (x) {
+    if (x && x.ev) {
       const sk = sky(x.code, now.f >= d.rise && now.f < d.set);
-      nowLine = `<p class="nowl"><span class="lbl">Now on top</span>${rd(x.temp)}°C, feels ${rd(x.ev.feels)}° · gusts ${rd(x.ev.tg)} km/h · ${esc(sk.l.toLowerCase())}</p>`;
+      nowLine = `<p class="nowl"><b>Now on top</b> ${rd(x.temp)}°C, feels ${rd(x.ev.feels)}° · gusts ${rd(x.ev.tg)} km/h · ${esc(sk.l.toLowerCase())}</p>`;
     }
   }
-  const list = p.none ? "" : `<ul class="why">${why(p, m).map(w => `<li style="--c:${LV[w.lv].c}"><span class="tr" aria-hidden="true">⎿</span><span class="lv"><span aria-hidden="true">${LV[w.lv].g}</span><span class="sr">${LV[w.lv].name}:</span></span><span>${esc(w.t)}${w.s ? `<small>${esc(w.s)}</small>` : ""}</span></li>`).join("")}</ul>`;
-  return `<section class="win focusbox" id="vbox" aria-labelledby="vt">
-    <div class="tbar"><h2 id="vt">${esc(s.name)}</h2></div>
-    <button type="button" class="tbar-r" data-edit="${s.id}" aria-label="Edit ${esc(s.name)}">${s.elev} m · <u>edit</u></button>
-    <div class="wbody">${head}${main}${hourStrip(m, p, now)}${nowLine}${list}</div></section>`;
+  const alt = p.none ? null : altFor(p);
+  const altBtn = alt ? `<button type="button" class="alt" data-spot="${alt.s.id}" style="--c:${LV[alt.q.level].c}"><b class="g" aria-hidden="true">${LV[alt.q.level].g}</b>
+      <span><b>${esc(alt.s.name)} is ${LV[alt.q.level].name.toLowerCase()} ${esc(dayWord(p.di, d.d))}</b><small>, ${hh(alt.q.s)}–${hh(alt.q.e)}</small></span>${CHEV}</button>` : "";
+  return `<section class="hero gut" aria-label="${esc(s.name)}, ${esc(dayFull(p.di, d.d))}">${CONTOURS}
+    <div class="hd">${nameRow(s)}<span class="when">${esc(dayFull(p.di, d.d))}</span></div>
+    ${main}
+    <p class="sun">Sunrise ${fmtT(d.rise)} · Sunset ${fmtT(d.set)}${start}${light}</p>
+    ${nowLine}${altBtn}</section>`;
+}
+
+// A better spot for the same day, if one of the others beats this one.
+function altFor(p) {
+  let best = null;
+  for (const s of spots) {
+    if (s.id === sel) continue;
+    const om = fc[s.id]?.m;
+    if (!om) continue;
+    const di = om.days.findIndex(x => x.d === p.day.d);
+    if (di < 0) continue;
+    const q = plan(om, di, settings.dur, settings.who, nowIn(om));
+    if (!q || q.none || q.level >= p.level) continue;
+    if (!best || q.level < best.q.level || (q.level === best.q.level && q.score < best.q.score)) best = { s, q };
+  }
+  return best;
 }
 
 function hourStrip(m, p, now) {
@@ -880,34 +867,39 @@ function hourStrip(m, p, now) {
   for (let h = h0; h <= h1; h++) {
     const x = hrs[h], col = h - h0 + 1, L = x && x.ev ? LV[x.ev.level] : null;
     const past = p.isToday && h + 1 <= now.f;
-    cells += `<i class="hc ${L ? L.key : "nd"}${past ? " past" : ""}" style="grid-column:${col}${L ? `;--c:${L.c}` : ""}"></i>`;
+    cells += `<i class="hc ${L ? L.key : "nd"}${past ? " past" : ""}" style="grid-column:${col}${L ? `;--f:${L.f}` : ""}"></i>`;
     labs += `<span class="hl${!p.none && h >= p.s && h < p.e ? " on" : ""}" style="grid-column:${col}">${pad(h)}</span>`;
   }
-  const brk = p.none ? "" : `<span class="hb" style="grid-column:${p.s - h0 + 1} / ${p.e - h0 + 1}"></span>`;
-  return `<div class="hstrip" style="--n:${n}" aria-hidden="true">${cells}${brk}${labs}</div>
-    <p class="legend" aria-hidden="true">${LV.map(L => `<span style="--c:${L.c}"><b>${L.g}</b> ${L.name.toLowerCase()}</span>`).join("")}</p>`;
+  const brk = p.none ? "" : `<span class="hb" style="grid-column:${Math.max(1, p.s - h0 + 1)} / ${Math.min(n + 1, p.e - h0 + 1)}"></span>`;
+  return `<div class="strip" style="--n:${n}" aria-hidden="true">${cells}${brk}${labs}</div>`;
 }
 
-function daylightBox(p, now) {
-  const d = p.day, k = 100 / 24;
-  const lit = `<i class="lit" style="left:${d.rise * k}%;width:${(d.set - d.rise) * k}%"></i>`;
-  const wnd = p.none ? "" : `<i class="wnd" style="left:${p.s * k}%;width:${(p.e - p.s) * k}%"></i>`;
-  const nowM = p.isToday ? `<i class="nowm" style="left:${clamp(now.f * k, 0, 100)}%"></i>` : "";
-  const latest = d.set - settings.dur;
-  let note;
-  if (latest < d.rise) note = `Not enough daylight for a ${settings.dur} h walk.`;
-  else if (p.isToday && now.f > latest) note = `The latest start for a ${settings.dur} h walk was <b>${fmtT(latest)}</b>.`;
-  else note = `Start by <b>${fmtT(latest)}</b> to finish a ${settings.dur} h walk in daylight.`;
-  if (p.isToday) note += now.f >= d.set ? " The sun has set." : now.f < d.rise ? ` Sunrise in ${fmtDur(d.rise - now.f)}.` : ` ${fmtDur(d.set - now.f)} of light left.`;
-  return `<section class="win" aria-labelledby="dlt"><div class="tbar"><h2 id="dlt">Daylight · ${esc(dayLabel(p.di, d.d))}</h2></div><div class="wbody">
-    <div class="dl"><span><span class="lbl">Sunrise</span><b class="num">${fmtT(d.rise)}</b></span><span><span class="lbl">Sunset</span><b class="num">${fmtT(d.set)}</b></span><span><span class="lbl">Light</span><b class="num">${fmtDur(d.set - d.rise)}</b></span></div>
-    <div class="dbar" aria-hidden="true"><div class="trk">${lit}${wnd}</div>${nowM}</div>
-    <div class="dticks" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
-    <p class="dnote">${note}</p>
-  </div></section>`;
+function choicesBox() {
+  return `<section class="sec gut" aria-label="Your walk">
+    <div class="field"><span class="flbl" id="walkLbl">Walk</span>
+      <div class="seg" style="--k:${DURS.length}" role="group" aria-labelledby="walkLbl">${DURS.map(D =>
+        `<button type="button" data-dur="${D.h}" aria-pressed="${settings.dur === D.h}">${D.name}<small>${D.h} hours</small></button>`).join("")}</div></div>
+    <div class="field"><span class="flbl" id="whoLbl">Who's going</span>
+      <div class="seg" style="--k:2" role="group" aria-labelledby="whoLbl">${Object.entries(PROFILES).map(([k, P]) =>
+        `<button type="button" data-who="${k}" aria-pressed="${settings.who === k}">${esc(P.name)}</button>`).join("")}</div></div>
+  </section>`;
+}
+
+function whyBox(p, m) {
+  return `<section class="sec gut" aria-labelledby="topsHead"><h2 id="topsHead">On the tops</h2>
+    ${why(p, m).map(w => `<div class="li" style="--c:${LV[w.lv].c}"><span class="g"><span aria-hidden="true">${LV[w.lv].g}</span><span class="sr">${LV[w.lv].name}:</span></span>
+      <b>${esc(w.t)}</b>${w.s ? `<small>${esc(w.s)}</small>` : ""}</div>`).join("")}</section>`;
+}
+
+function kitBox(p, m) {
+  return `<section class="sec gut" aria-labelledby="packHead"><h2 id="packHead">Pack</h2>
+    ${kit(p, m).map(([a, b]) => `<div class="li pk"><span class="g" aria-hidden="true">+</span><b>${esc(a)}</b>${b ? `<small>${esc(b)}</small>` : ""}</div>`).join("")}</section>`;
 }
 
 function hoursBox(m, p, now) {
+  const btn = `<button type="button" class="more" data-hours aria-expanded="${hoursOpen}" aria-controls="hbody">
+    <span><b>Hour by hour</b><small>Temperature, wind and rain for every hour</small></span>${CHEV}</button>`;
+  if (!hoursOpen) return `<section class="hrs gut">${btn}</section>`;
   const d = p.day, hrs = m.byDay[d.d] || [];
   const a = showAll ? 0 : Math.max(0, Math.floor(d.rise) - 1), b = showAll ? 23 : Math.min(23, Math.ceil(d.set));
   let rows = "";
@@ -920,7 +912,7 @@ function hoursBox(m, p, now) {
     const rain = x.p == null ? "–" : x.p < 0.05 ? "0" : x.p.toFixed(1);
     rows += `<tr class="${[inw && "inw", !lit && "dark", past && "past"].filter(Boolean).join(" ")}">
       <td class="tm">${hh(h)}</td>
-      <td class="ic">${sk.i ? ICON[sk.i] : ""}<span class="sr">${esc(sk.l)}</span></td>
+      <td class="ic">${skySvg(sk.i)}<span class="sr">${esc(sk.l)}</span></td>
       <td>${rd(x.temp)}°</td><td class="mu">${rd(x.ev.feels)}°</td>
       <td class="${(x.p ?? 0) >= 0.2 ? "wet" : "mu"}">${rain}</td>
       <td class="mu">${x.pp == null ? "–" : x.pp + "%"}</td>
@@ -928,62 +920,13 @@ function hoursBox(m, p, now) {
       <td>${rd(x.ev.tw)}<span class="mu">/</span>${rd(x.ev.tg)}</td>
       <td class="lv" style="--c:${L.c}"><span aria-hidden="true">${L.g}</span><span class="sr">${L.name}</span></td></tr>`;
   }
-  return `<section class="win" aria-labelledby="hbt"><div class="tbar"><h2 id="hbt">Hour by hour · ${esc(dayLabel(p.di, d.d))}</h2></div><div class="wbody">
+  return `<section class="hrs gut">${btn}<div class="hbody" id="hbody">
     <p class="hnote">At ${m.elev} m. Wind on the tops in km/h, average / gust.</p>
     <div class="tscroll"><table class="hours">
       <thead><tr><th class="tm">Time</th><th><span class="sr">Sky</span></th><th>°C</th><th>Feels</th><th>mm</th><th>Rain</th><th colspan="2">Wind</th><th><span class="sr">Rating</span></th></tr></thead>
       <tbody>${rows}</tbody></table></div>
-    <button type="button" class="more" data-allhours>${showAll ? "Daylight hours only" : "Show all 24 hours"}</button>
+    <button type="button" class="lnk" data-allhours>${showAll ? "Daylight hours only" : "Show all 24 hours"}</button>
   </div></section>`;
-}
-
-function kitBox(p, m) {
-  return `<section class="win" aria-labelledby="kt"><div class="tbar"><h2 id="kt">Pack</h2></div><div class="wbody">
-    <ul class="kit">${kit(p, m).map(([a, b]) => `<li><span class="b" aria-hidden="true">+</span><span>${esc(a)}${b ? `<small>${esc(b)}</small>` : ""}</span></li>`).join("")}</ul>
-  </div></section>`;
-}
-
-function renderSpots() {
-  const P = PROFILES[settings.who];
-  if (!spots.length) {
-    $("spotsView").innerHTML = `<section class="win focusbox"><div class="tbar"><h2>Spots</h2></div><div class="wbody">
-      <p class="errp">No spots yet. Add the hills you walk and see the week for all of them here.</p>
-      <button type="button" class="btn default" data-add>Add a spot</button></div></section>`;
-    return;
-  }
-  const bets = [];
-  const cards = spots.map(s => {
-    const S = fc[s.id], m = S?.m;
-    let n = `<span class="n muted">…</span>`, week = "", best = S?.err ? "Couldn't load the forecast" : "Loading the forecast";
-    if (m) {
-      const ps = plansFor(m), t = ps[0], bp = bestOf(ps);
-      if (bp) bets.push({ s, p: bp });
-      n = t && !t.none
-        ? `<span class="n" style="color:${LV[t.level].c}">${LV[t.level].name}<small>today</small></span>`
-        : `<span class="n muted">${t?.none === "late" ? "Done" : "–"}<small>today</small></span>`;
-      week = `<span class="wk" aria-hidden="true">${ps.map(p => {
-        const ok = p && !p.none;
-        return `<span><b style="color:${ok ? LV[p.level].c : "var(--faint)"}">${ok ? LV[p.level].g : "·"}</b><i>${dateOf(p.day.d).toLocaleDateString("en-IE", { weekday: "narrow" })}</i></span>`;
-      }).join("")}</span>`;
-      best = bp ? `Best ${bp.di === 0 ? "today" : bp.di === 1 ? "tomorrow" : wdShort(bp.day.d)} ${hh(bp.s)}` : "No good window this week";
-    }
-    return `<button type="button" class="acard${s.id === sel ? " on" : ""}" data-spot="${s.id}" data-go aria-label="${esc(s.name)}, ${s.elev} m. ${esc(best)}. Show forecast.">
-      <span class="hd">${esc(s.name)}</span>
-      <span class="bd">${n}<span class="sub">${s.elev} m${s.region ? " · " + esc(s.region) : ""}</span>${week}<span class="sub">${esc(best)}</span></span>
-    </button>`;
-  }).join("");
-  bets.sort((a, b) => a.p.level - b.p.level || a.p.score - b.p.score || a.p.di - b.p.di);
-  const betRows = bets.length
-    ? bets.slice(0, 3).map(({ s, p }) => `<button type="button" class="bet" data-spot="${s.id}" data-day="${p.di}" data-go style="--c:${LV[p.level].c}">
-        <span class="g" aria-hidden="true">${LV[p.level].g}</span>
-        <span class="bt"><b>${esc(s.name)}</b><small>${esc(dayLabel(p.di, p.day.d))} · ${hh(p.s)}–${hh(p.e)} · ${LV[p.level].name}</small></span>
-        <span class="arr" aria-hidden="true">›</span></button>`).join("")
-    : `<p class="loading">Waiting for forecasts <span class="cur" aria-hidden="true"></span></p>`;
-  $("spotsView").innerHTML = `<section class="win focusbox" aria-labelledby="bbt"><div class="tbar"><h2 id="bbt">Best bets this week</h2></div><div class="wbody">
-      <p class="bets-sub">For a ${settings.dur} h walk with ${settings.who === "group" ? "a Scout group" : "just you"}. <button type="button" class="linkbtn" data-plan>Change</button></p>
-      <div class="bets">${betRows}</div></div></section>
-    <div class="grid">${cards}</div>
-    ${seeded ? `<p class="hintline">These are starter spots. Add your own with +, or open one and tap edit to change or remove it.</p>` : ""}`;
 }
 
 function renderStatus() {
@@ -996,14 +939,24 @@ function renderStatus() {
   if (S?.loading) line = "Updating the forecast…";
   else if (S?.err && S?.m) line = `Couldn't update. Showing the forecast from ${t(S.at)}.`;
   else if (S?.at) line = `Updated ${t(S.at)}`;
-  $("status").innerHTML = `${line || s ? `<p>${esc(line)}${S && !S.loading ? `${line ? " · " : ""}<button type="button" class="linkbtn" data-refresh>Refresh</button>` : ""}</p>` : ""}
-    <p><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> · <button type="button" class="linkbtn" data-about>How ratings work</button></p>`;
+  const refresh = S && !S.loading && S.m ? `${line ? " · " : ""}<button type="button" class="lnk" data-refresh>Refresh</button>` : "";
+  $("status").innerHTML = `${line || refresh ? `<p>${esc(line)}${refresh}</p>` : ""}
+    <p><button type="button" class="lnk" data-about>How ratings work</button> · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a></p>`;
 }
 
 // ---------- sheets ----------
-const SHEETS = ["spotSheet", "planSheet", "aboutSheet"];
-function openSheet(id) { SHEETS.forEach(x => { $(x).hidden = x !== id; }); $("scrim").hidden = false; }
-function closeSheets() { SHEETS.forEach(x => { $(x).hidden = true; }); $("scrim").hidden = true; sheetMode = null; }
+const SHEETS = ["addSheet", "editSheet", "aboutSheet"];
+let lastFocus = null;
+function openSheet(id) {
+  lastFocus = document.activeElement;
+  SHEETS.forEach(x => { $(x).hidden = x !== id; });
+  $("scrim").hidden = false;
+}
+function closeSheets() {
+  SHEETS.forEach(x => { $(x).hidden = true; });
+  $("scrim").hidden = true; editId = null;
+  if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true });
+}
 let toastTimer = null;
 function toast(msg, undo) {
   const el = $("toast");
@@ -1011,46 +964,32 @@ function toast(msg, undo) {
   el.hidden = false;
   if (undo) $("undoBtn").onclick = () => { undo(); el.hidden = true; };
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.hidden = true; }, 4500);
+  toastTimer = setTimeout(() => { el.hidden = true; }, 5000);
 }
 
-// add / edit a spot
-let sheetMode = null, picked = null, results = [], searchT = null, searchAC = null;
-function suggestHTML() {
-  return `<div class="sugg"><p>Try</p>${SUGGEST.map(n => `<button type="button" data-sugg="${esc(n)}">${esc(n)}</button>`).join("")}</div>`;
+// add a spot: one tap on a hill or a search result
+let results = [], searchT = null, searchAC = null, editId = null;
+const resRow = (attr, name, sub, m) => `<button type="button" class="res" ${attr}>
+  <svg class="tri" viewBox="0 0 10 9" aria-hidden="true"><path d="M5 0L10 9H0z"></path></svg>
+  <span class="rt"><b>${esc(name)}</b>${sub ? `<span>${esc(sub)}</span>` : ""}</span>
+  ${m != null ? `<span class="m">${Math.round(m)} m</span>` : ""}<span class="plus" aria-hidden="true">${PLUS}</span></button>`;
+// "County Donegal" reads better as "Donegal" than the province, "Ulster".
+const placeArea = x => (x.admin2 || x.admin1 || "").replace(/^County\s+/i, "");
+function popularHTML() {
+  const have = new Set(spots.map(s => s.name.toLowerCase()));
+  const list = POPULAR.map((h, i) => ({ h, i })).filter(o => !have.has(o.h.name.toLowerCase())).slice(0, 7);
+  return list.length ? `<h4>Popular hills</h4>${list.map(({ h, i }) => resRow(`data-pop="${i}" aria-label="Add ${esc(h.name)}, ${h.elev} metres"`, h.name, h.region, h.elev)).join("")}` : "";
 }
 function openAdd() {
-  sheetMode = { mode: "add" }; picked = null;
-  $("spotTitle").textContent = "Add a spot";
-  $("findStep").hidden = false; $("confirmStep").hidden = true;
-  $("q").value = ""; $("locMsg").textContent = "";
-  $("results").innerHTML = suggestHTML();
-  openSheet("spotSheet");
+  $("q").value = ""; $("locMsg").hidden = true;
+  $("results").innerHTML = popularHTML();
+  openSheet("addSheet");
   $("q").focus();
 }
-function openEdit(id) {
-  const s = spots.find(x => x.id === id);
-  if (!s) return;
-  sheetMode = { mode: "edit", id };
-  showConfirm(s, true);
-  openSheet("spotSheet");
-}
-function showConfirm(place, isEdit) {
-  picked = place;
-  $("spotTitle").textContent = isEdit ? "Edit spot" : "Add a spot";
-  $("findStep").hidden = true; $("confirmStep").hidden = false; $("confirm").hidden = true;
-  $("picked").textContent = [place.region, `${(+place.lat).toFixed(3)}, ${(+place.lon).toFixed(3)}`].filter(Boolean).join(" · ");
-  $("fName").value = place.name || "";
-  $("fElev").value = place.elev != null ? Math.round(place.elev) : "";
-  $("saveBtn").textContent = isEdit ? "Save" : "Add spot";
-  $("delBtn").hidden = !isEdit;
-  $("backBtn").hidden = isEdit;
-  if (!isEdit) $("fElev").focus();
-}
 function parseCoords(q) {
-  const mt = q.match(/^\s*(-?\d{1,2}(?:\.\d+)?)\s*[,\s]\s*(-?\d{1,3}(?:\.\d+)?)\s*$/);
+  const mt = q.match(/^\s*(-?\d{1,2}(?:\.\d+)?)\s*[,\s]\s*([-−]?\d{1,3}(?:\.\d+)?)\s*$/);
   if (!mt) return null;
-  const lat = +mt[1], lon = +mt[2];
+  const lat = +mt[1], lon = +mt[2].replace("−", "-");
   return Math.abs(lat) <= 90 && Math.abs(lon) <= 180 ? { lat, lon } : null;
 }
 async function elevationAt(lat, lon) {
@@ -1064,10 +1003,10 @@ async function runSearch() {
   const co = parseCoords(q);
   if (co) {
     results = [];
-    $("results").innerHTML = `<button type="button" class="res" data-coords="${co.lat},${co.lon}"><b>Use ${co.lat.toFixed(4)}, ${co.lon.toFixed(4)}</b><span>Coordinates</span></button>`;
+    $("results").innerHTML = `<h4>Coordinates</h4>` + resRow(`data-coords="${co.lat},${co.lon}"`, `${co.lat.toFixed(4)}, ${co.lon.toFixed(4)}`, "Add this point", null);
     return;
   }
-  if (q.length < 2) { $("results").innerHTML = suggestHTML(); return; }
+  if (q.length < 2) { $("results").innerHTML = popularHTML(); return; }
   searchAC?.abort();
   searchAC = new AbortController();
   $("results").innerHTML = `<p class="hint">Searching…</p>`;
@@ -1078,28 +1017,51 @@ async function runSearch() {
     const rank = x => x.country_code === "IE" ? 2 : x.country_code === "GB" ? 1 : 0;
     results = (j.results || []).map((x, i) => ({ x, i })).sort((a, b) => rank(b.x) - rank(a.x) || a.i - b.i).map(o => o.x);
     $("results").innerHTML = results.length
-      ? results.map((x, i) => `<button type="button" class="res" data-res="${i}"><b>${esc(x.name)}</b><span>${esc([FEATURE[x.feature_code], x.admin1, x.country].filter(Boolean).join(" · "))}${x.elevation != null ? ` · ${Math.round(x.elevation)} m` : ""}</span></button>`).join("")
+      ? `<h4>Results</h4>` + results.map((x, i) => resRow(`data-res="${i}"`, x.name, [FEATURE[x.feature_code], placeArea(x), x.country_code !== "IE" ? x.country : ""].filter(Boolean).join(" · "), x.elevation)).join("")
       : `<p class="hint">No places called “${esc(q)}”. Try a nearby town or trailhead, or paste coordinates.</p>`;
   } catch (e) {
     if (e.name === "AbortError") return;
     $("results").innerHTML = `<p class="hint err">Couldn't reach the place search. Check your connection and try again.</p>`;
   }
 }
-async function pickCoords(lat, lon, name) {
-  $("locMsg").textContent = "Looking up the height…";
+function addSpot(place) {
+  const s = { id: uid(), name: place.name, region: place.region || "", lat: +(+place.lat).toFixed(4), lon: +(+place.lon).toFixed(4), elev: Math.round(clamp(+place.elev || 0, 0, 5000)) };
+  const prevSel = sel;
+  spots.push(s); store.set("hillwx-seeded", false); saveSpots();
+  closeSheets();
+  sel = s.id; store.set("hillwx-sel", sel);
+  render(); window.scrollTo(0, 0); load(s);
+  toast(`Added ${s.name}, forecast at ${s.elev} m`, () => {
+    const i = spots.findIndex(x => x.id === s.id);
+    if (i >= 0) spots.splice(i, 1);
+    store.del("hillwx-fc-" + s.id); delete fc[s.id]; saveSpots();
+    sel = spots.some(x => x.id === prevSel) ? prevSel : spots[0]?.id ?? null; store.set("hillwx-sel", sel);
+    render();
+  });
+}
+async function addAt(lat, lon, name) {
+  $("locMsg").hidden = false; $("locMsg").classList.remove("err"); $("locMsg").textContent = "Looking up the height…";
   let elev = null;
   try { elev = await elevationAt(lat, lon); } catch (_) {}
-  $("locMsg").textContent = "";
-  showConfirm({ name, region: "", lat, lon, elev: elev ?? 0 }, false);
+  $("locMsg").hidden = true;
+  addSpot({ name, region: "", lat, lon, elev: elev ?? 0 });
 }
 
-// plan sheet
-function renderPlan() {
-  $("durOpts").innerHTML = DURS.map(d => `<button type="button" data-dur="${d}" aria-pressed="${settings.dur === d}">${d} h</button>`).join("");
-  $("whoOpts").innerHTML = Object.entries(PROFILES).map(([k, P]) => `<button type="button" data-who="${k}" aria-pressed="${settings.who === k}">${esc(P.name)}<small>${esc(P.blurb)}</small></button>`).join("");
+// edit a spot
+function openEdit(id) {
+  const s = spots.find(x => x.id === id);
+  if (!s) return;
+  editId = id;
+  $("picked").textContent = [s.region, `${(+s.lat).toFixed(3)}, ${(+s.lon).toFixed(3)}`].filter(Boolean).join(" · ");
+  $("fName").value = s.name; $("fElev").value = Math.round(s.elev);
+  $("confirm").hidden = true; $("delBtn").hidden = false;
+  openSheet("editSheet");
+}
+
+function renderAbout() {
   const P = PROFILES[settings.who];
-  $("limits").innerHTML = `<table class="lim">
-    <thead><tr><th><span class="sr">Limit</span></th><th style="--c:var(--fair)">~ fair</th><th style="--c:var(--poor)">! poor</th><th style="--c:var(--poor)">✕ no go</th></tr></thead>
+  $("limits").innerHTML = `<table class="lim"><caption>Limits for ${esc(P.name)}</caption>
+    <thead><tr><th><span class="sr">Limit</span></th><th style="--c:var(--fair)">~ fair</th><th style="--c:var(--poor)">! poor</th><th style="--c:var(--nogo)">✕ no go</th></tr></thead>
     <tbody>
       <tr><th>Gusts on tops, km/h</th><td>${P.gust[0]}+</td><td>${P.gust[1]}+</td><td>${P.gust[2]}+</td></tr>
       <tr><th>Feels like on top</th><td>${P.feels[0]}° or less</td><td>${String(P.feels[1]).replace("-", "−")}° or less</td><td></td></tr>
@@ -1107,98 +1069,86 @@ function renderPlan() {
       <tr><th>Tops in cloud</th><td>yes</td><td>thick fog</td><td></td></tr>
       <tr><th>Snow on top</th><td>${P.strict ? "" : "light"}</td><td>${P.strict ? "any" : "heavy"}</td><td></td></tr>
       <tr><th>Thunder</th><td></td><td></td><td>any</td></tr>
-    </tbody></table>`;
+    </tbody></table>
+    <p><b>Scout group</b> uses stricter limits than <b>Just me</b>. Switch Who's going to see the other set.</p>`;
 }
 
 // ---------- events ----------
-function go(v) { view = v; store.set("hillwx-view", v); render(); window.scrollTo(0, 0); }
 function selectSpot(id) { sel = id; store.set("hillwx-sel", id); const s = cur(); if (s) load(s); }
 
 document.addEventListener("click", e => {
   const el = e.target;
   if (el.closest("[data-close]")) { closeSheets(); return; }
-  const tab = el.closest(".tab");
-  if (tab) { go(tab.dataset.view); return; }
-  if (el.closest("#addBtn") || el.closest("[data-add]")) { openAdd(); return; }
-  const sp = el.closest("[data-spot]");
-  if (sp) {
-    selectSpot(sp.dataset.spot);
-    if (sp.dataset.day != null) selDay = +sp.dataset.day;
-    if (sp.hasAttribute("data-go")) go("fc"); else render();
-    return;
-  }
-  const dy = el.closest("[data-day]");
-  if (dy) {
-    selDay = +dy.dataset.day; render();
-    if (dy.hasAttribute("data-scroll")) $("vbox")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
-    return;
-  }
-  const ed = el.closest("[data-edit]");
-  if (ed) { openEdit(ed.dataset.edit); return; }
-  if (el.closest("[data-plan]")) { renderPlan(); openSheet("planSheet"); return; }
-  if (el.closest("[data-about]")) { openSheet("aboutSheet"); return; }
-  if (el.closest("[data-refresh]")) { loadAll(true); return; }
-  if (el.closest("[data-allhours]")) { showAll = !showAll; render(); return; }
-  const du = el.closest("[data-dur]");
-  if (du) { settings = { ...settings, dur: +du.dataset.dur }; store.set("hillwx-settings", settings); renderPlan(); render(); return; }
-  const wh = el.closest("[data-who]");
-  if (wh) { settings = { ...settings, who: wh.dataset.who }; store.set("hillwx-settings", settings); renderPlan(); render(); return; }
-  const sg = el.closest("[data-sugg]");
-  if (sg) { $("q").value = sg.dataset.sugg; runSearch(); return; }
+  if (el.closest("[data-add]")) { openAdd(); return; }
+  const pop = el.closest("[data-pop]");
+  if (pop) { const h = POPULAR[+pop.dataset.pop]; if (h) addSpot(h); return; }
   const rs = el.closest("[data-res]");
   if (rs) {
     const x = results[+rs.dataset.res];
-    if (x) showConfirm({ name: x.name, region: [x.admin1, x.country_code !== "IE" ? x.country : ""].filter(Boolean).join(", "), lat: x.latitude, lon: x.longitude, elev: x.elevation ?? 0 }, false);
+    if (!x) return;
+    const region = [placeArea(x), x.country_code !== "IE" ? x.country : ""].filter(Boolean).join(", ");
+    if (x.elevation != null) addSpot({ name: x.name, region, lat: x.latitude, lon: x.longitude, elev: x.elevation });
+    else addAt(x.latitude, x.longitude, x.name);
     return;
   }
   const co = el.closest("[data-coords]");
-  if (co) { const [lat, lon] = co.dataset.coords.split(",").map(Number); pickCoords(lat, lon, "Custom spot"); return; }
+  if (co) { const [lat, lon] = co.dataset.coords.split(",").map(Number); addAt(lat, lon, "Custom spot"); return; }
+  const sp = el.closest("[data-spot]");
+  if (sp) { selectSpot(sp.dataset.spot); render(); return; }
+  const dy = el.closest("[data-day]");
+  if (dy) { selDay = +dy.dataset.day; autoDay = false; render(); return; }
+  const ed = el.closest("[data-edit]");
+  if (ed) { openEdit(ed.dataset.edit); return; }
+  const du = el.closest("[data-dur]");
+  if (du) { settings = { ...settings, dur: +du.dataset.dur }; store.set("hillwx-settings", settings); render(); return; }
+  const wh = el.closest("[data-who]");
+  if (wh) { settings = { ...settings, who: wh.dataset.who }; store.set("hillwx-settings", settings); render(); return; }
+  if (el.closest("[data-hours]")) { hoursOpen = !hoursOpen; render(); return; }
+  if (el.closest("[data-allhours]")) { showAll = !showAll; render(); return; }
+  if (el.closest("[data-about]")) { renderAbout(); openSheet("aboutSheet"); return; }
+  if (el.closest("[data-refresh]")) { loadAll(true); return; }
 });
 $("scrim").onclick = closeSheets;
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("scrim").hidden) closeSheets(); });
 $("q").addEventListener("input", () => { clearTimeout(searchT); searchT = setTimeout(runSearch, 320); });
-$("backBtn").onclick = () => { $("confirmStep").hidden = true; $("findStep").hidden = false; $("q").focus(); };
+$("findForm").addEventListener("submit", e => { e.preventDefault(); clearTimeout(searchT); runSearch(); });
 $("locBtn").onclick = () => {
-  if (!navigator.geolocation) { $("locMsg").textContent = "This browser can't share your location. Search instead."; return; }
-  $("locMsg").textContent = "Finding you…";
+  const msg = $("locMsg");
+  msg.hidden = false; msg.classList.remove("err");
+  if (!navigator.geolocation) { msg.classList.add("err"); msg.textContent = "This browser can't share your location. Search instead."; return; }
+  msg.textContent = "Finding you…";
   navigator.geolocation.getCurrentPosition(
-    pos => pickCoords(+pos.coords.latitude.toFixed(4), +pos.coords.longitude.toFixed(4), "My location"),
-    err => { $("locMsg").textContent = err.code === 1 ? "Location was blocked. Allow it in your browser, or search instead." : "Couldn't find your location. Search instead."; },
+    pos => addAt(+pos.coords.latitude.toFixed(4), +pos.coords.longitude.toFixed(4), "My location"),
+    err => { msg.classList.add("err"); msg.textContent = err.code === 1 ? "Location is blocked. Allow it in your browser settings, or search instead." : "Couldn't find your location. Search instead."; },
     { timeout: 12000, maximumAge: 600000 }
   );
 };
-$("spotSheet").addEventListener("submit", e => {
+$("editSheet").addEventListener("submit", e => {
   e.preventDefault();
-  if ($("confirmStep").hidden) { clearTimeout(searchT); runSearch(); return; }
+  const s = spots.find(x => x.id === editId);
+  if (!s) { closeSheets(); return; }
   const name = $("fName").value.trim(), elev = Math.round(Number($("fElev").value));
   if (!name) { $("fName").focus(); return; }
   if ($("fElev").value === "" || !Number.isFinite(elev) || elev < 0 || elev > 5000) { toast("Enter a height between 0 and 5000 m"); $("fElev").focus(); return; }
-  if (sheetMode?.mode === "edit") {
-    const s = spots.find(x => x.id === sheetMode.id);
-    if (s) { s.name = name; s.elev = elev; seeded = false; store.set("hillwx-seeded", false); saveSpots(); closeSheets(); render(); load(s); toast("Spot saved"); }
-    return;
-  }
-  const s = { id: uid(), name, region: picked?.region || "", lat: +(+picked.lat).toFixed(4), lon: +(+picked.lon).toFixed(4), elev };
-  spots.push(s); seeded = false; store.set("hillwx-seeded", false); saveSpots();
-  closeSheets(); selectSpot(s.id); selDay = 0; go("fc");
-  toast(`Added ${name}`);
+  s.name = name; s.elev = elev; store.set("hillwx-seeded", false); saveSpots();
+  closeSheets(); render(); load(s); toast("Saved");
 });
-$("delBtn").onclick = () => { $("confirm").hidden = false; };
-$("confirmNo").onclick = () => { $("confirm").hidden = true; };
+$("delBtn").onclick = () => { $("confirm").hidden = false; $("delBtn").hidden = true; $("confirmYes").focus(); };
+$("confirmNo").onclick = () => { $("confirm").hidden = true; $("delBtn").hidden = false; };
 $("confirmYes").onclick = () => {
-  const i = spots.findIndex(x => x.id === sheetMode?.id);
+  const i = spots.findIndex(x => x.id === editId);
   if (i < 0) { closeSheets(); return; }
   const [s] = spots.splice(i, 1);
   const cached = store.get("hillwx-fc-" + s.id, null), S = fc[s.id];
   store.del("hillwx-fc-" + s.id); delete fc[s.id];
   if (sel === s.id) { sel = spots[0]?.id ?? null; store.set("hillwx-sel", sel); }
-  seeded = false; store.set("hillwx-seeded", false); saveSpots();
-  closeSheets(); render();
+  store.set("hillwx-seeded", false); saveSpots();
+  lastFocus = null; closeSheets(); render();
   toast(`Removed ${s.name}`, () => {
     spots.splice(i, 0, s); saveSpots();
     if (cached) store.set("hillwx-fc-" + s.id, cached);
     if (S) fc[s.id] = S;
-    if (!sel) { sel = s.id; store.set("hillwx-sel", sel); }
+    sel = s.id; store.set("hillwx-sel", sel);
     render(); load(s);
   });
 };
@@ -1207,16 +1157,14 @@ setInterval(() => { if (!document.hidden) render(); }, 5 * 60 * 1000);
 
 // ---------- boot ----------
 function boot() {
-  document.querySelectorAll("[data-px]").forEach(el => { el.outerHTML = ICON[el.dataset.px]; });
   const saved = store.get("hillwx-spots", null);
-  if (Array.isArray(saved)) { spots = saved.filter(s => s && s.id && Number.isFinite(+s.lat) && Number.isFinite(+s.lon)); seeded = store.get("hillwx-seeded", false); }
-  else { spots = DEFAULT_SPOTS.map(s => ({ ...s })); seeded = true; saveSpots(); store.set("hillwx-seeded", true); }
+  if (Array.isArray(saved)) spots = saved.filter(s => s && s.id && Number.isFinite(+s.lat) && Number.isFinite(+s.lon));
+  else { spots = DEFAULT_SPOTS.map(s => ({ ...s })); saveSpots(); store.set("hillwx-seeded", true); }
   const st = store.get("hillwx-settings", {});
-  if (DURS.includes(st.dur)) settings.dur = st.dur;
+  if (Number.isFinite(st.dur)) settings.dur = snapDur(st.dur);
   if (PROFILES[st.who]) settings.who = st.who;
   sel = store.get("hillwx-sel", null);
   if (!spots.some(s => s.id === sel)) sel = spots[0]?.id ?? null;
-  if (store.get("hillwx-view", "fc") === "spots") view = "spots";
   // show anything cached straight away, then refresh what's stale
   spots.forEach(s => {
     const c = store.get("hillwx-fc-" + s.id, null);
