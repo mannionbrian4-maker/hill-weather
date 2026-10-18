@@ -1,0 +1,539 @@
+<title>Conflict Atlas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Tap a country or conflict zone for a short brief and the best public expert analysis from CFR, Crisis Group and other think tanks.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Conflict Atlas">
+<meta name="theme-color" content="#EDF0F3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F151C" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2316202B'/%3E%3Cellipse cx='16' cy='16' rx='11.5' ry='7.5' fill='none' stroke='%23C9D3DE' stroke-width='1.4'/%3E%3Cpath d='M16 8.5v15' stroke='%23C9D3DE' stroke-width='1.2'/%3E%3Ccircle cx='19.5' cy='13.5' r='3' fill='%23F97066'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Source+Serif+4:opsz,wght@8..60,400..600&display=swap">
+<style>
+/* Layout: one working screen. The map is the index, the briefing panel is the page:
+   map above the panel on a phone, beside it on a wide screen. Paper is a cool grey-blue
+   like a diplomatic map sheet; dispatch blue is the one accent; status colours are data
+   (CFR's own ratings), never decoration. */
+:root {
+  --paper: #EDF0F3;
+  --surface: #FAFBFC;
+  --ink: #16202B;
+  --muted: #536070;
+  --faint: #7A8593;
+  --rule: #D3D9E0;
+  --rule-soft: #E3E7EC;
+  --sea: #DCE3EA;
+  --land: #F8F9FA;
+  --border: #B9C3CE;
+  --grat: #C9D2DC;
+  --accent: #1D4E89;
+  --accent-wash: #DCE6F2;
+  --worse: #B42318;
+  --dev: #6941C6;
+  --same: #A15C07;
+  --better: #067647;
+  --fill-mix: 46%;
+  --shadow: 0 1px 2px rgba(22,32,43,.12), 0 4px 14px rgba(22,32,43,.08);
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --prose: "Source Serif 4", Georgia, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F151C; --surface: #151D26; --ink: #E5EAF0; --muted: #A0ABB8; --faint: #76818E;
+    --rule: #26313D; --rule-soft: #1F2933; --sea: #0B1117; --land: #1C2631; --border: #33404E; --grat: #18212B;
+    --accent: #8DB8EE; --accent-wash: #1C2D42;
+    --worse: #F97066; --dev: #B692F6; --same: #F5B54A; --better: #4FCB8D; --fill-mix: 52%;
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 4px 14px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F151C; --surface: #151D26; --ink: #E5EAF0; --muted: #A0ABB8; --faint: #76818E;
+  --rule: #26313D; --rule-soft: #1F2933; --sea: #0B1117; --land: #1C2631; --border: #33404E; --grat: #18212B;
+  --accent: #8DB8EE; --accent-wash: #1C2D42;
+  --worse: #F97066; --dev: #B692F6; --same: #F5B54A; --better: #4FCB8D; --fill-mix: 52%;
+  --shadow: 0 1px 2px rgba(0,0,0,.5), 0 4px 14px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+
+html { box-sizing: border-box; height: 100%; }
+*, *::before, *::after { box-sizing: inherit; }
+body { height: 100%; margin: 0; background: var(--paper); color: var(--ink); font-family: var(--display); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
+button, input { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; text-align: inherit; -webkit-tap-highlight-color: transparent; }
+a { color: var(--accent); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.gut { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+.s-worse { --st: var(--worse); } .s-dev { --st: var(--dev); } .s-same { --st: var(--same); } .s-better { --st: var(--better); }
+
+/* frame */
+.app { height: 100%; display: grid; grid-template-areas: "top" "map" "panel"; grid-template-rows: auto minmax(220px, 44%) minmax(0, 1fr); }
+@media (min-width: 900px) {
+  .app { grid-template-areas: "top top" "map panel"; grid-template-columns: minmax(0, 1fr) minmax(380px, 34%); grid-template-rows: auto minmax(0, 1fr); }
+}
+.top { grid-area: top; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-block: 12px 10px; background: var(--paper); border-bottom: 1px solid var(--rule); }
+.mark { margin: 0; font-size: 15px; font-weight: 800; font-stretch: 125%; letter-spacing: .07em; text-transform: uppercase; line-height: 1.1; }
+.mark span { color: var(--worse); }
+.asof { font-size: 12px; font-weight: 600; font-stretch: 75%; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+
+/* map */
+.mapwrap { grid-area: map; position: relative; overflow: hidden; background: var(--sea); touch-action: none; -webkit-user-select: none; user-select: none; }
+#map { display: block; width: 100%; height: 100%; }
+.sphere { fill: var(--sea); }
+.grat { fill: none; stroke: var(--grat); stroke-width: .6; vector-effect: non-scaling-stroke; }
+.land path { fill: var(--land); stroke: var(--border); stroke-width: .5; vector-effect: non-scaling-stroke; stroke-linejoin: round; cursor: pointer; transition: fill .15s; }
+.land path[class*="s-"] { fill: color-mix(in srgb, var(--st) var(--fill-mix), var(--land)); }
+.land path.inv { fill: color-mix(in srgb, var(--ink) 9%, var(--land)); }
+@media (hover: hover) { .land path:hover { fill: color-mix(in srgb, var(--accent) 22%, var(--land)); } .land path[class*="s-"]:hover { fill: color-mix(in srgb, var(--st) 70%, var(--land)); } }
+.land path.sel { stroke: var(--accent); stroke-width: 2.2; }
+.mk { cursor: pointer; }
+.mk .hit { fill: transparent; }
+.mk .ring { fill: var(--surface); stroke: var(--st); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+.mk .dot { fill: var(--st); }
+.mk .pulse { fill: none; stroke: var(--st); stroke-width: 1.4; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; animation: pulse 2.4s ease-out infinite; }
+.mk.on .ring { stroke: var(--accent); stroke-width: 2.6; }
+@keyframes pulse { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(2.6); opacity: 0; } }
+.zoomctl { position: absolute; right: max(10px, env(safe-area-inset-right, 0px)); bottom: 10px; display: flex; flex-direction: column; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); background: var(--surface); }
+.zoomctl button { width: 40px; height: 40px; display: grid; place-items: center; color: var(--ink); }
+.zoomctl button + button { border-top: 1px solid var(--rule); }
+.zoomctl svg { width: 18px; height: 18px; }
+.key { position: absolute; left: max(10px, env(safe-area-inset-left, 0px)); bottom: 10px; display: none; gap: 12px; padding: 7px 11px; border-radius: 10px; background: color-mix(in srgb, var(--surface) 92%, transparent); box-shadow: var(--shadow); font-size: 12px; font-weight: 600; font-stretch: 87.5%; color: var(--muted); }
+@media (min-width: 900px) { .key { display: flex; } }
+.key i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--st); margin-right: 5px; vertical-align: 0; }
+.tip { position: absolute; pointer-events: none; padding: 4px 8px; border-radius: 6px; background: var(--ink); color: var(--paper); font-size: 12.5px; font-weight: 600; white-space: nowrap; transform: translate(-50%, -130%); }
+
+/* panel */
+.panel { grid-area: panel; overflow-y: auto; overscroll-behavior: contain; background: var(--surface); border-top: 1px solid var(--rule); }
+@media (min-width: 900px) { .panel { border-top: 0; border-left: 1px solid var(--rule); } }
+.inner { padding-block: 16px 40px; display: flex; flex-direction: column; gap: 22px; max-width: 700px; }
+.lab { margin: 0 0 8px; font-size: 12px; font-weight: 650; font-stretch: 75%; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.lab small { font-size: inherit; font-weight: 500; letter-spacing: .06em; color: var(--faint); margin-left: 6px; }
+.lede { margin: 0; font-family: var(--prose); font-size: 17px; line-height: 1.45; max-width: 60ch; text-wrap: pretty; }
+.prose { margin: 0; font-family: var(--prose); font-size: 17px; line-height: 1.52; max-width: 62ch; text-wrap: pretty; }
+h2.ttl { margin: 0; font-size: 25px; line-height: 1.12; font-weight: 750; font-stretch: 92%; letter-spacing: -.005em; text-wrap: balance; }
+h3.sub { margin: 0; font-size: 19px; line-height: 1.2; font-weight: 700; font-stretch: 92%; text-wrap: balance; }
+.eyebrow { margin: 0 0 4px; font-size: 12px; font-weight: 650; font-stretch: 75%; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.note { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+
+.search { position: relative; }
+.search input { width: 100%; min-height: 46px; padding: 0 14px 0 40px; border: 1px solid var(--rule); border-radius: 12px; background: var(--paper); font-size: 16px; outline: none; }
+.search input:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-wash); }
+.search svg { position: absolute; left: 13px; top: 14px; width: 18px; height: 18px; color: var(--muted); pointer-events: none; }
+.sugg { list-style: none; margin: 6px 0 0; padding: 4px 0; border: 1px solid var(--rule); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+.sugg button { display: flex; justify-content: space-between; gap: 12px; width: 100%; min-height: 42px; padding: 0 14px; align-items: center; }
+.sugg button:hover, .sugg button:focus-visible { background: var(--accent-wash); outline: none; }
+.sugg small { color: var(--muted); font-size: 12.5px; font-stretch: 87.5%; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; font-size: 13.5px; color: var(--muted); }
+.legend li { display: inline-flex; align-items: center; gap: 6px; }
+.legend b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.legend i { width: 10px; height: 10px; border-radius: 50%; background: var(--st); }
+.legend .al i { background: none; border: 1.6px solid var(--worse); }
+
+.group + .group { margin-top: 18px; }
+.rows { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule-soft); }
+.row { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 12px; align-items: start; width: 100%; padding: 11px 0; border-bottom: 1px solid var(--rule-soft); }
+.row .sw { width: 10px; height: 10px; margin-top: 6px; border-radius: 50%; background: var(--st); }
+.row .t { display: block; font-size: 15.5px; font-weight: 620; line-height: 1.3; }
+.row .c { display: block; margin-top: 2px; font-size: 13px; color: var(--muted); }
+.row .chev { width: 16px; height: 16px; margin-top: 3px; color: var(--faint); }
+@media (hover: hover) { .row:hover .t { color: var(--accent); } }
+
+.back { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; min-height: 40px; margin-block: -8px -12px; padding-right: 8px; color: var(--accent); font-weight: 620; }
+.back svg { width: 16px; height: 16px; }
+
+.meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; padding: 0; list-style: none; }
+.pill { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 10px 0 8px; border-radius: 13px; font-size: 12.5px; font-weight: 650; font-stretch: 87.5%; background: color-mix(in srgb, var(--st, var(--ink)) 13%, transparent); color: var(--st, var(--ink)); }
+.pill i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.pill.plain { --st: var(--muted); }
+.pill.alert { --st: var(--worse); background: transparent; box-shadow: inset 0 0 0 1.5px var(--worse); }
+.pill.alert i { background: none; box-shadow: inset 0 0 0 1.6px currentColor; }
+
+.brief { display: flex; flex-direction: column; gap: 18px; }
+.brief + .brief { padding-top: 22px; border-top: 1px solid var(--rule); }
+.places { display: flex; flex-wrap: wrap; gap: 6px; }
+.place { min-height: 32px; padding: 0 11px; border-radius: 16px; background: var(--paper); font-size: 13.5px; font-weight: 600; color: var(--ink); box-shadow: inset 0 0 0 1px var(--rule); }
+.place.inv { color: var(--muted); }
+
+.start { display: grid; gap: 8px; }
+@media (min-width: 560px) and (max-width: 899px) { .start { grid-template-columns: 1fr 1fr; } }
+.src { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 12px 14px; border-radius: 12px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); color: var(--ink); text-decoration: none; }
+.src b { display: block; font-size: 15px; font-weight: 700; }
+.src span { display: block; margin-top: 1px; font-size: 13px; color: var(--muted); }
+.src svg { width: 16px; height: 16px; color: var(--accent); }
+@media (hover: hover) { .src:hover { box-shadow: inset 0 0 0 1.5px var(--accent); } }
+
+.reads { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule-soft); }
+.reads a { display: block; padding: 10px 0 11px; border-bottom: 1px solid var(--rule-soft); color: var(--ink); text-decoration: none; }
+.reads .who { display: block; font-size: 11.5px; font-weight: 700; font-stretch: 75%; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.reads .who em { font-style: normal; font-weight: 500; letter-spacing: .05em; color: var(--faint); margin-left: 6px; }
+.reads .rt { display: block; margin-top: 2px; font-family: var(--prose); font-size: 16px; line-height: 1.35; text-wrap: pretty; }
+@media (hover: hover) { .reads a:hover .rt { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; } }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; min-height: 34px; padding: 0 12px; border-radius: 17px; font-size: 13.5px; font-weight: 600; color: var(--ink); text-decoration: none; box-shadow: inset 0 0 0 1px var(--rule); }
+@media (hover: hover) { .chip:hover { box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--accent); } }
+.hint { margin: 8px 0 0; font-size: 13px; color: var(--faint); }
+
+.party { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule-soft); }
+
+.about { padding-top: 16px; border-top: 1px solid var(--rule); font-size: 13px; line-height: 1.5; color: var(--muted); }
+.about p { margin: 0; max-width: 62ch; }
+.about p + p { margin-top: 8px; }
+
+@media (prefers-reduced-motion: reduce) { .mk .pulse { animation: none; opacity: 0; } .land path { transition: none; } }
+</style>
+
+<div class="app">
+  <header class="top gut">
+    <h1 class="mark">Conflict<span>·</span>Atlas</h1>
+    <span class="asof" id="asof"></span>
+  </header>
+
+  <div class="mapwrap" id="mapwrap">
+    <svg id="map" role="img" aria-label="World map. Conflict zones are shaded by status; tap a country or marker for its brief.">
+      <g id="vp">
+        <path class="sphere" id="sphere"></path>
+        <path class="grat" id="grat"></path>
+        <g class="land" id="land"></g>
+        <g id="marks"></g>
+      </g>
+    </svg>
+    <div class="key" aria-hidden="true">
+      <span class="s-worse"><i></i>Worsening</span>
+      <span class="s-dev"><i></i>Developing</span>
+      <span class="s-same"><i></i>Unchanging</span>
+      <span class="s-better"><i></i>Improving</span>
+    </div>
+    <div class="zoomctl">
+      <button type="button" id="zin" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button type="button" id="zout" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+      <button type="button" id="zreset" aria-label="Show the whole map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.3 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.3-3.8-8.5s1.2-6.1 3.8-8.5z"/></svg></button>
+    </div>
+    <div class="tip" id="tip" hidden></div>
+  </div>
+
+  <main class="panel" id="panel" aria-live="polite">
+    <div class="inner gut" id="view"></div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  var D = /*__DATA__*/null;
+
+  var ST = { Worsening: 'worse', Developing: 'dev', Unchanging: 'same', Improving: 'better' };
+  var RANK = { worse: 4, dev: 3, same: 2, better: 1 };
+  var ORDER = ['Middle East and North Africa', 'Europe and Eurasia', 'Sub-Saharan Africa', 'Asia', 'Americas'];
+  var ICON = {
+    out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>',
+    chev: '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>',
+    back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>',
+    find: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>'
+  };
+
+  var C = {}, K = {}, WHERE = {}, INV = {};
+  D.countries.forEach(function (c) { C[c.id] = c; c.slug = slug(c.n); });
+  D.conflicts.forEach(function (k) {
+    K[k.id] = k; k.st = ST[k.status];
+    k.where.forEach(function (id) { (WHERE[id] = WHERE[id] || []).push(k.id); });
+    k.involved.forEach(function (id) { (INV[id] = INV[id] || []).push(k.id); });
+  });
+  var BYSLUG = {}; D.countries.forEach(function (c) { BYSLUG[c.slug] = c; });
+
+  function slug(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]; }); }
+  function countryStatus(id) {
+    var ks = WHERE[id]; if (!ks) return null;
+    return ks.map(function (k) { return K[k].st; }).sort(function (a, b) { return RANK[b] - RANK[a]; })[0];
+  }
+  function names(ids) { return ids.map(function (id) { return C[id] ? C[id].n : id; }).join(', '); }
+
+  document.getElementById('asof').textContent = 'As of ' + D.asof;
+
+  /* ---------------- map ---------------- */
+  var wrap = document.getElementById('mapwrap');
+  var svg = d3.select('#map'), vp = d3.select('#vp');
+  d3.select('#sphere').attr('d', D.sphere);
+  d3.select('#grat').attr('d', D.grat);
+
+  var land = d3.select('#land').selectAll('path').data(D.countries).join('path')
+    .attr('d', function (c) { return c.d; })
+    .attr('data-id', function (c) { return c.id; })
+    .attr('class', function (c) {
+      var s = countryStatus(c.id);
+      return s ? 's-' + s : (INV[c.id] ? 'inv' : null);
+    });
+
+  var marks = d3.select('#marks').selectAll('g').data(D.conflicts).join('g')
+    .attr('class', function (k) { return 'mk s-' + k.st + (k.alert ? ' alert' : ''); })
+    .attr('role', 'button')
+    .attr('aria-label', function (k) { return k.name; });
+  marks.each(function (k) {
+    var g = d3.select(this);
+    if (k.alert) g.append('circle').attr('class', 'pulse').attr('r', 6.5);
+    g.append('circle').attr('class', 'hit').attr('r', 15);
+    g.append('circle').attr('class', 'ring').attr('r', 6.5);
+    g.append('circle').attr('class', 'dot').attr('r', 3.6);
+  });
+
+  var W = D.w, H = D.h, cur = d3.zoomIdentity, kMeet = 1;
+  var zoom = d3.zoom().clickDistance(6).on('zoom', function (e) {
+    cur = e.transform;
+    vp.attr('transform', cur);
+    marks.attr('transform', function (k) { return 'translate(' + k.pt[0] + ',' + k.pt[1] + ') scale(' + (1 / cur.k) + ')'; });
+  });
+  svg.call(zoom).on('dblclick.zoom', null);
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function size() { var r = wrap.getBoundingClientRect(); return [Math.max(1, r.width), Math.max(1, r.height)]; }
+  function setExtent() {
+    var s = size();
+    kMeet = Math.min(s[0] / W, s[1] / H);
+    zoom.scaleExtent([kMeet * 0.95, kMeet * 18]).translateExtent([[-W * 0.05, -H * 0.05], [W * 1.05, H * 1.05]]);
+  }
+  function homeTransform() {
+    var s = size(), cw = s[0], ch = s[1];
+    var narrow = cw < 700;
+    var k = Math.min(Math.max(cw / W, ch / H), kMeet * (narrow ? 1.9 : 1.18));
+    // phones open on the band from the Sahel to Central Asia, where most tracked conflicts are
+    var cx = narrow ? W * 0.57 : W * 0.5, cy = narrow ? H * 0.40 : H * 0.47;
+    return d3.zoomIdentity.translate(cw / 2 - k * cx, ch / 2 - k * cy).scale(k);
+  }
+  function go(t, ms) { svg.transition().duration(reduce ? 0 : (ms == null ? 650 : ms)).call(zoom.transform, t); }
+  function fitBox(b) {
+    var s = size(), cw = s[0], ch = s[1], pad = 0.62;
+    var bw = Math.max(b[2] - b[0], 8), bh = Math.max(b[3] - b[1], 8);
+    var k = Math.min(kMeet * 12, pad * Math.min(cw / bw, ch / bh));
+    k = Math.max(k, kMeet * 1.05);
+    var cx = (b[0] + b[2]) / 2, cy = (b[1] + b[3]) / 2;
+    return d3.zoomIdentity.translate(cw / 2 - k * cx, ch / 2 - k * cy).scale(k);
+  }
+  function union(ids) {
+    var b = null;
+    ids.forEach(function (id) {
+      var c = C[id]; if (!c) return;
+      b = b ? [Math.min(b[0], c.b[0]), Math.min(b[1], c.b[1]), Math.max(b[2], c.b[2]), Math.max(b[3], c.b[3])] : c.b.slice();
+    });
+    return b;
+  }
+
+  setExtent();
+  svg.call(zoom.transform, homeTransform());
+
+  d3.select('#zin').on('click', function () { svg.transition().duration(reduce ? 0 : 250).call(zoom.scaleBy, 1.8); });
+  d3.select('#zout').on('click', function () { svg.transition().duration(reduce ? 0 : 250).call(zoom.scaleBy, 1 / 1.8); });
+  d3.select('#zreset').on('click', function () { go(homeTransform()); });
+
+  land.on('click', function (e, c) { if (c.id === 'siachen') return nav('country-' + C['356'].slug); nav('country-' + c.slug); });
+  marks.on('click', function (e, k) { e.stopPropagation(); nav(k.id); });
+
+  var tip = document.getElementById('tip');
+  function showTip(e, text) {
+    if (e.pointerType && e.pointerType !== 'mouse') return;
+    var r = wrap.getBoundingClientRect();
+    tip.textContent = text; tip.hidden = false;
+    tip.style.left = (e.clientX - r.left) + 'px'; tip.style.top = (e.clientY - r.top) + 'px';
+  }
+  land.on('pointermove', function (e, c) { showTip(e, c.n); }).on('pointerleave', function () { tip.hidden = true; });
+  marks.on('pointermove', function (e, k) { showTip(e, k.name); }).on('pointerleave', function () { tip.hidden = true; });
+
+  var lastFit = null;
+  function highlight(ids, conflictId) {
+    land.classed('sel', function (c) { return ids.indexOf(c.id) > -1; });
+    land.filter('.sel').raise();
+    marks.classed('on', function (k) { return k.id === conflictId; });
+  }
+  function frame(box) { lastFit = box; go(box ? fitBox(box) : homeTransform()); }
+
+  var rt;
+  window.addEventListener('resize', function () {
+    clearTimeout(rt);
+    rt = setTimeout(function () { setExtent(); svg.call(zoom.transform, lastFit ? fitBox(lastFit) : homeTransform()); }, 120);
+  });
+
+  /* ---------------- panel ---------------- */
+  var view = document.getElementById('view'), panel = document.getElementById('panel');
+
+  function regionalSources(ids) {
+    var out = [], seen = {};
+    ids.forEach(function (id) {
+      var c = C[id]; if (!c) return;
+      var keys = [c.r, c.s];
+      if (id === '408' || id === '410') keys.push('korea');
+      keys.forEach(function (k) { (D.sources[k] || []).forEach(function (s) { if (!seen[s[1]]) { seen[s[1]] = 1; out.push(s); } }); });
+    });
+    return out;
+  }
+  function searchChips(term, ids) {
+    var list = D.sources.global.slice(0, 6).concat(regionalSources(ids), D.sources.global.slice(6));
+    var seen = {};
+    var html = list.filter(function (s) { if (seen[s[1]]) return false; seen[s[1]] = 1; return true; }).map(function (s) {
+      var u = 'https://www.google.com/search?q=' + encodeURIComponent(term + ' site:' + s[1]) + '&tbs=qdr:y';
+      return '<a class="chip" href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(s[0]) + '</a>';
+    }).join('');
+    return '<section><h3 class="lab">Search each think tank</h3><div class="chips">' + html + '</div>' +
+      '<p class="hint">Opens a web search of that site for the past 12 months.</p></section>';
+  }
+  function metaPills(k) {
+    var h = '<ul class="meta">' +
+      '<li class="pill s-' + k.st + '"><i></i>' + esc(k.status) + '</li>' +
+      '<li class="pill plain">Impact on US interests: ' + esc(k.impact) + '</li>';
+    if (k.alert) h += '<li class="pill alert" title="Crisis Group CrisisWatch conflict risk alert"><i></i>Crisis Group alert for October</li>';
+    return h + '</ul>';
+  }
+  function placeChips(k) {
+    var w = k.where.map(function (id) { return '<button type="button" class="place" data-country="' + esc(id) + '">' + esc(C[id].n) + '</button>'; });
+    var v = k.involved.map(function (id) { return '<button type="button" class="place inv" data-country="' + esc(id) + '">' + esc(C[id].n) + '</button>'; });
+    return '<div class="places" aria-label="Countries">' + w.concat(v).join('') + '</div>';
+  }
+  function briefBody(k, headingTag) {
+    var title = headingTag === 'h2'
+      ? '<h2 class="ttl" tabindex="-1">' + esc(k.name) + '</h2>'
+      : '<h3 class="sub">' + esc(k.name) + '</h3>';
+    var reads = k.reads.map(function (r) {
+      return '<li><a href="' + esc(r[3]) + '" target="_blank" rel="noopener"><span class="who">' + esc(r[0]) +
+        (r[2] ? '<em>' + esc(r[2]) + '</em>' : '') + '</span><span class="rt">' + esc(r[1]) + '</span></a></li>';
+    }).join('');
+    return '<article class="brief">' +
+      '<div>' + metaPills(k) + title + '</div>' +
+      placeChips(k) +
+      '<section><h3 class="lab">Background</h3><p class="prose">' + esc(k.background) + '</p></section>' +
+      '<section><h3 class="lab">Latest<small>as of ' + esc(D.asof) + '</small></h3><p class="prose">' + esc(k.latest) + '</p></section>' +
+      '<section><h3 class="lab">What to watch</h3><p class="prose">' + esc(k.watch) + '</p></section>' +
+      '<section><h3 class="lab">Start here</h3><div class="start">' +
+        '<a class="src" href="' + esc(k.cfr) + '" target="_blank" rel="noopener"><div><b>CFR Global Conflict Tracker</b><span>Background, timeline and latest news</span></div>' + ICON.out + '</a>' +
+        '<a class="src" href="' + esc(k.icg) + '" target="_blank" rel="noopener"><div><b>International Crisis Group</b><span>Field reports, podcasts and monthly CrisisWatch</span></div>' + ICON.out + '</a>' +
+      '</div></section>' +
+      '<section><h3 class="lab">Key reads</h3><ul class="reads">' + reads + '</ul></section>' +
+      '</article>';
+  }
+  function backBtn() { return '<button type="button" class="back" data-nav="">' + ICON.back + 'All conflicts</button>'; }
+  function row(k, sub) {
+    return '<li><button type="button" class="row s-' + k.st + '" data-nav="' + esc(k.id) + '"><span class="sw"></span><span><span class="t">' + esc(k.name) + '</span>' +
+      '<span class="c">' + esc(sub) + '</span></span>' + ICON.chev + '</button></li>';
+  }
+  function about() {
+    return '<footer class="about"><p>Status and US-impact ratings are CFR’s. Alerts are from Crisis Group’s CrisisWatch. The short briefs are written by Claude from those trackers and the linked analysis, checked on ' + esc(D.asof) + '. Tap through to read the experts in their own words.</p>' +
+      '<p>Map data from Natural Earth. Borders shown do not imply any position on disputed territory.</p></footer>';
+  }
+
+  function showHome() {
+    highlight([], null); frame(null);
+    var counts = {}; D.conflicts.forEach(function (k) { counts[k.st] = (counts[k.st] || 0) + 1; });
+    var alerts = D.conflicts.filter(function (k) { return k.alert; }).length;
+    var groups = ORDER.map(function (reg) {
+      var ks = D.conflicts.filter(function (k) { return k.region === reg; })
+        .sort(function (a, b) { return (RANK[b.st] - RANK[a.st]) || ((b.alert ? 1 : 0) - (a.alert ? 1 : 0)); });
+      return '<section class="group"><h3 class="lab">' + esc(reg) + '</h3><ul class="rows">' +
+        ks.map(function (k) { return row(k, (k.alert ? 'Crisis Group alert · ' : '') + names(k.where.length ? k.where : k.involved)); }).join('') + '</ul></section>';
+    }).join('');
+    view.innerHTML =
+      '<p class="lede">Tap a country or a marker for a short brief and the best public expert analysis on it.</p>' +
+      '<div class="search"><label class="sr" for="q">Find a country or conflict</label>' + ICON.find +
+      '<input id="q" type="search" autocomplete="off" placeholder="Find a country or conflict"><ul class="sugg" id="sugg" hidden></ul></div>' +
+      '<section><h3 class="lab">' + D.conflicts.length + ' conflicts on CFR’s tracker</h3><ul class="legend">' +
+        ['worse', 'dev', 'same', 'better'].map(function (s) {
+          var label = { worse: 'Worsening', dev: 'Developing', same: 'Unchanging', better: 'Improving' }[s];
+          return '<li class="s-' + s + '"><i></i>' + label + ' <b>' + (counts[s] || 0) + '</b></li>';
+        }).join('') +
+        '<li class="al"><i></i>Crisis Group alert <b>' + alerts + '</b></li></ul></section>' +
+      '<div>' + groups + '</div>' + about();
+    bindSearch();
+  }
+
+  function showConflict(id) {
+    var k = K[id];
+    var hl = k.where.length ? k.where : k.involved;
+    highlight(hl, k.id);
+    var box = k.where.length ? union(k.where) : [k.pt[0] - 45, k.pt[1] - 35, k.pt[0] + 45, k.pt[1] + 35];
+    frame(box);
+    view.innerHTML = backBtn() + briefBody(k, 'h2') + searchChips(k.term, k.where.concat(k.involved)) + about();
+    focusTitle();
+  }
+
+  function showCountry(c) {
+    var where = WHERE[c.id] || [], inv = (INV[c.id] || []).filter(function (x) { return where.indexOf(x) < 0; });
+    if (c.id === 'siachen') inv = ['india-pakistan'];
+    highlight([c.id], where.length === 1 ? where[0] : null);
+    frame(c.b);
+    var h = backBtn() +
+      '<div><p class="eyebrow">' + esc([c.s || c.r].filter(Boolean).join('')) + '</p><h2 class="ttl" tabindex="-1">' + esc(c.n) + '</h2>' +
+      (c.note ? '<p class="note">' + esc(c.note) + '</p>' : '') + '</div>';
+    if (where.length) {
+      h += '<div>' + where.map(function (id) { return briefBody(K[id], 'h3'); }).join('') + '</div>';
+    }
+    if (inv.length) {
+      h += '<section><h3 class="lab">' + (where.length ? 'Also a party to' : 'A party to') + '</h3><ul class="party rows">' +
+        inv.map(function (id) { return row(K[id], 'Conflict zone: ' + names(K[id].where.length ? K[id].where : K[id].involved)); }).join('') + '</ul></section>';
+    }
+    if (!where.length && !inv.length) {
+      h += '<section><p class="prose">Not on CFR’s Global Conflict Tracker. Crisis Group’s monthly CrisisWatch follows more than 70 countries and may still cover it.</p>' +
+        '<div class="start" style="margin-top:12px"><a class="src" href="https://www.crisisgroup.org/crisiswatch" target="_blank" rel="noopener"><div><b>CrisisWatch</b><span>This month’s trends and alerts, country by country</span></div>' + ICON.out + '</a></div></section>';
+    }
+    h += searchChips(c.n, [c.id]) + about();
+    view.innerHTML = h;
+    focusTitle();
+  }
+
+  function focusTitle() {
+    panel.scrollTop = 0;
+    var t = view.querySelector('h2.ttl');
+    if (t && document.activeElement && document.activeElement !== document.body) { try { t.focus({ preventScroll: true }); } catch (e) {} }
+  }
+
+  /* search */
+  var INDEX = D.conflicts.map(function (k) { return { label: k.name, sub: 'Conflict', hash: k.id, key: (k.name + ' ' + k.term + ' ' + names(k.where)).toLowerCase() }; })
+    .concat(D.countries.filter(function (c) { return c.id !== 'siachen'; }).map(function (c) {
+      return { label: c.n, sub: WHERE[c.id] ? 'Country · on the tracker' : 'Country', hash: 'country-' + c.slug, key: c.n.toLowerCase(), country: true };
+    }));
+  function bindSearch() {
+    var q = document.getElementById('q'), ul = document.getElementById('sugg');
+    function render() {
+      var v = q.value.trim().toLowerCase();
+      if (!v) { ul.hidden = true; ul.innerHTML = ''; return; }
+      var hits = INDEX.filter(function (x) { return x.key.indexOf(v) > -1; })
+        .sort(function (a, b) { return (b.label.toLowerCase().indexOf(v) === 0) - (a.label.toLowerCase().indexOf(v) === 0) || ((a.country ? 1 : 0) - (b.country ? 1 : 0)); })
+        .slice(0, 8);
+      ul.innerHTML = hits.length ? hits.map(function (x) { return '<li><button type="button" data-nav="' + esc(x.hash) + '"><span>' + esc(x.label) + '</span><small>' + esc(x.sub) + '</small></button></li>'; }).join('')
+        : '<li><button type="button" disabled><span>No match</span></button></li>';
+      ul.hidden = false;
+    }
+    q.addEventListener('input', render);
+    q.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { var b = ul.querySelector('button[data-nav]'); if (b) { e.preventDefault(); nav(b.getAttribute('data-nav')); } }
+      if (e.key === 'ArrowDown') { var f = ul.querySelector('button'); if (f) { e.preventDefault(); f.focus(); } }
+      if (e.key === 'Escape') { q.value = ''; render(); }
+    });
+  }
+
+  view.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-nav]');
+    if (b) { nav(b.getAttribute('data-nav')); return; }
+    var p = e.target.closest('[data-country]');
+    if (p) { var c = C[p.getAttribute('data-country')]; if (c) nav('country-' + c.slug); }
+  });
+
+  /* routing: #ukraine for a conflict, #country-ireland for a country */
+  function nav(hash) {
+    if (('#' + hash) === location.hash || (!hash && !location.hash)) route();
+    else location.hash = hash;
+  }
+  function route() {
+    var h = decodeURIComponent(location.hash.replace(/^#/, ''));
+    if (K[h]) return showConflict(h);
+    if (h.indexOf('country-') === 0 && BYSLUG[h.slice(8)]) return showCountry(BYSLUG[h.slice(8)]);
+    showHome();
+  }
+  window.addEventListener('hashchange', route);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && location.hash && !(e.target && e.target.id === 'q')) nav('');
+  });
+  route();
+})();
+</script>

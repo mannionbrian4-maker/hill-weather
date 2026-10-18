@@ -1,0 +1,18 @@
+{
+  "name": "conflict-atlas",
+  "private": true,
+  "type": "module",
+  "description": "Builds Conflict Atlas: a tappable world map of conflicts with short briefs and links to expert analysis.",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node build.mjs && python3 check.py"
+  },
+  "dependencies": {
+    "d3": "7.9.0",
+    "d3-geo": "3.1.1",
+    "topojson-client": "3.1.0",
+    "topojson-simplify": "3.0.3",
+    "world-atlas": "2.0.2",
+    "world-countries": "5.1.0"
+  }
+}
