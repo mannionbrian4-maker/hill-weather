@@ -1,0 +1,1232 @@
+<!doctype html>
+<html lang="en-IE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hill Weather</title>
+<meta name="theme-color" content="#141311">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="hill/wx">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 11' shape-rendering='crispEdges'%3E%3Crect width='11' height='11' rx='2' fill='%23141311'/%3E%3Cpath fill='%23e8833a' d='M3 4h3v1h-3zM7 4h1v1h-1zM2 5h7v1h-7zM2 6h7v1h-7zM1 7h9v1h-9zM1 8h9v1h-9z'/%3E%3Cpath fill='%23ece7df' d='M4 2h1v1h-1zM3 3h3v1h-3z'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAABpElEQVR42u3dsQmDQBSA4RhcQOIQBqxcxyUyigM4k5VghrHIAkGuODnP+77awsSfZ3E8rNpX84B/nv4CxIE4EAfiQByIA3EgDsSBOEAciANxIA7EgTgQB+JAHIgDxIE4EAfiQByIA3EgDsSBOEAciANxIA7EgTgQB+JAHIgDcYA4EAcR1Df7Pd91Cbyy6weP3+RAHIgDcSAOxIE4EAfiQBwgDsSBODhdlcXnysPPWs9Q7PmtyYE4EAfiQByIA3EgDsSBOBAHiANxEEEeu7L7PGZxn+vnHXhlP20mB14riANxgDgQB+JAHIgDcSAOxIE4KELKXdnwM8ySJTy/NTkQB+JAHIgDcSAOxIE4EAfiAHEgDsSBOBAH4kAciANxIA4QB+JAHIgDcSAOLi7+rqwN2FSib9WaHIgDcSAOxIE4EAfiQByIA3GAOBAH4kAciANxIA7EgTgQB4gDcSAOxIE4EAcXl/K7spgciANxIA4QB+JAHIgDcSAOxIE4EAfiQBwgDsSBOBAH4kAciANxIA7EAeJAHIgDcSAOxIE4EAfiQBwgDg78AKFjE3OSsTtlAAAAAElFTkSuQmCC">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400..800&display=swap">
+<style>
+/* Layout: the Everyday Tracker's terminal look, carried over. Dark, monospace, orange as the one accent.
+   Sections are rounded outline boxes with their name set into the top border, like a TUI panel.
+   Verdict colours are data (good / fair / poor / no go), the orange is chrome: it marks the chosen
+   walk window, the selected day and spot. Weather icons are pixel drawings, like the tab icons.
+   Forecast opens first: day strip + spot chips, verdict box, daylight, hour by hour, kit. */
+:root {
+  --bg: #141311;
+  --panel: #1c1a17;
+  --raise: #24211d;
+  --line: #3b3731;
+  --fg: #ece7df;
+  --muted: #a39d93;
+  --faint: #6f6a62;
+  --accent: #e8833a;
+  --accent-ink: #1a0f06;
+  --accent-wash: rgba(232,131,58,.13);
+  --good: #7cc47f;
+  --fair: #d9bf55;
+  --poor: #f0575d;
+  --sun: #f3dc9b;
+  --sun-dim: rgba(243,220,155,.42);
+  --rain: #4fb3c8;
+  --snow: #ece7df;
+  --mono: "Atkinson Hyperlegible Mono", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); margin: 0; }
+body { color: var(--fg); font-family: var(--mono); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+[hidden] { display: none !important; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+a { color: var(--muted); text-underline-offset: 3px; text-decoration-color: var(--line); }
+.num { font-variant-numeric: tabular-nums; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.px { display: block; width: 14px; height: 14px; }
+.muted { color: var(--muted); }
+
+.wrap {
+  max-width: 620px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: calc(14px + env(safe-area-inset-top, 0px)) calc(112px + env(safe-area-inset-bottom, 0px));
+}
+
+/* header box */
+.menubar { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--accent); border-radius: 10px; padding: 10px 14px; }
+.brand { display: flex; align-items: baseline; gap: 8px; font-weight: 800; font-size: 1.02rem; color: var(--accent); }
+.cur { display: inline-block; width: .55em; height: 1em; background: var(--accent); transform: translateY(2px); }
+.today { font-size: .82rem; color: var(--muted); text-align: right; }
+
+/* boxes with their name set into the border */
+.win { position: relative; margin-top: 26px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.win.focusbox { border-color: var(--accent); }
+.win > .tbar { position: absolute; top: -.72em; left: 12px; max-width: calc(100% - 130px); margin: 0; padding: 0 6px; background: linear-gradient(var(--bg) 50%, var(--panel) 50%); line-height: 1.3; }
+.win > .tbar h2 { margin: 0; font-size: .9rem; font-weight: 800; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.win > .tbar-r { position: absolute; top: calc(-.72em - 7px); right: 12px; padding: 7px 6px; border: 0; background: linear-gradient(var(--bg) 50%, var(--panel) 50%); line-height: 1.3; font-size: .78rem; font-weight: 700; color: var(--muted); }
+.win > .tbar-r u { text-decoration-color: var(--faint); text-underline-offset: 3px; }
+.wbody { padding: 16px 14px 14px; }
+.lbl { display: block; font-size: .68rem; color: var(--faint); letter-spacing: .07em; text-transform: uppercase; }
+
+/* buttons */
+.btn { border: 1px solid var(--line); background: var(--raise); border-radius: 8px; padding: 10px 16px; font-weight: 700; font-size: .9rem; }
+.btn.sm { padding: 5px 11px; font-size: .82rem; }
+.btn.default { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.inv { background: var(--poor); border-color: var(--poor); color: var(--bg); }
+.linkbtn { background: none; border: 0; padding: 6px 0; font-weight: 700; font-size: .86rem; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
+.linkbtn.danger { color: var(--poor); }
+
+/* sticky day strip + spot chips */
+.sticky { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; margin: 14px -16px 0; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding-inline: 16px; }
+.filters::-webkit-scrollbar { display: none; }
+.fchip { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: none; border-radius: 6px; padding: 5px 10px; font-size: .8rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.fchip .cg { font-weight: 800; }
+.fchip[aria-pressed="true"] { color: var(--fg); border-color: var(--accent); background: var(--accent-wash); }
+
+/* verdict */
+.fhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.fhead p { margin: 0; font-size: .82rem; color: var(--muted); }
+.fhead p b { color: var(--fg); }
+.vhead { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px 18px; flex-wrap: wrap; }
+.vleft { display: flex; align-items: baseline; gap: 8px; color: var(--c); }
+.vtag { font-weight: 800; font-size: 1.05rem; white-space: pre; }
+.vword { font-weight: 800; font-size: 2.7rem; line-height: .95; letter-spacing: -.03em; }
+.vword.muted { color: var(--muted); font-size: 2.1rem; }
+.vwin { display: grid; margin-left: auto; text-align: right; }
+.vwin b { font-size: 1.3rem; font-weight: 800; line-height: 1.25; }
+.vwin small { font-size: .76rem; color: var(--muted); }
+.vnote { margin: 10px 0 0; color: var(--muted); font-size: .84rem; }
+.nextday { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 7px 11px; background: var(--raise); border: 1px solid var(--line); border-radius: 8px; font-size: .84rem; font-weight: 700; text-align: left; }
+.nextday .g { color: var(--c); font-weight: 800; }
+
+.hstrip { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); column-gap: 2px; margin-top: 16px; }
+.hc { grid-row: 1; height: 16px; background: var(--c); border-radius: 1px; }
+.hc.nd { background: var(--line); }
+.hc.nogo { background: repeating-linear-gradient(135deg, var(--poor) 0 3px, var(--panel) 3px 5px); box-shadow: inset 0 0 0 1px var(--poor); }
+.hc.past { opacity: .28; }
+.hb { grid-row: 2; height: 7px; margin-top: 3px; border: 2px solid var(--accent); border-top: 0; border-radius: 0 0 3px 3px; }
+.hl { grid-row: 3; margin-top: 2px; font-size: .62rem; color: var(--faint); text-align: center; }
+.hl.on { color: var(--accent); font-weight: 800; }
+.legend { display: flex; flex-wrap: wrap; gap: 3px 12px; margin: 8px 0 0; font-size: .7rem; color: var(--faint); }
+.legend b { color: var(--c); }
+.nowl { margin: 12px 0 0; font-size: .84rem; }
+.nowl .lbl { display: inline; margin-right: 6px; }
+
+.why { list-style: none; margin: 14px 0 0; padding: 12px 0 0; border-top: 1px dashed var(--line); display: grid; gap: 8px; }
+.why li { display: flex; align-items: baseline; gap: 8px; font-size: .88rem; line-height: 1.35; }
+.why .tr { color: var(--faint); flex: 0 0 auto; }
+.why .lv { flex: 0 0 1.2ch; color: var(--c); font-weight: 800; text-align: center; }
+.why small { display: block; color: var(--muted); font-size: .76rem; margin-top: 1px; }
+
+#vbox { scroll-margin-top: calc(70px + env(safe-area-inset-top, 0px)); }
+
+/* this week: one row per day, tap to see that day */
+.wlist { display: grid; padding: 12px 6px 6px; }
+.wrow { display: grid; grid-template-columns: 9ch minmax(0, 1fr) auto; grid-template-areas: "d r w" ". s s"; gap: 2px 10px; align-items: baseline; width: 100%; padding: 9px 8px; text-align: left; background: none; border: 0; border-top: 1px dashed var(--line); }
+.wrow:first-child { border-top-color: transparent; }
+.wrow .wd { grid-area: d; font-weight: 700; font-size: .88rem; white-space: nowrap; }
+.wrow .wr { grid-area: r; display: inline-flex; gap: 6px; color: var(--c); font-weight: 800; font-size: .9rem; white-space: nowrap; }
+.wrow .ww { grid-area: w; font-weight: 700; font-size: .84rem; }
+.wrow .ws { grid-area: s; font-size: .74rem; color: var(--muted); }
+.wrow[aria-pressed="true"] { background: var(--accent-wash); border-radius: 8px; border-top-color: transparent; }
+.wrow[aria-pressed="true"] + .wrow { border-top-color: transparent; }
+.wrow[aria-pressed="true"] .wd { color: var(--accent); }
+
+/* daylight */
+.dl { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+.dl b { font-size: 1.15rem; font-weight: 800; }
+.dbar { position: relative; margin-top: 16px; }
+.dbar .trk { position: relative; height: 12px; background: var(--line); overflow: hidden; }
+.dbar .trk::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 6px, var(--panel) 6px 8px); }
+.dbar .trk i { position: absolute; top: 0; bottom: 0; }
+.dbar .lit { background: var(--sun-dim); }
+.dbar .wnd { background: var(--accent); }
+.dbar .nowm { position: absolute; top: -5px; bottom: -5px; width: 2px; margin-left: -1px; background: var(--fg); }
+.dticks { display: flex; justify-content: space-between; margin-top: 5px; font-size: .64rem; color: var(--faint); }
+.dnote { margin: 10px 0 0; font-size: .84rem; color: var(--muted); }
+.dnote b { color: var(--fg); }
+
+/* hour by hour */
+.hnote { margin: 0 0 10px; font-size: .76rem; color: var(--muted); }
+.tscroll { overflow-x: auto; margin-inline: -4px; }
+.hours { width: 100%; border-collapse: collapse; font-size: .8rem; font-variant-numeric: tabular-nums; }
+.hours th { padding: 0 5px 6px; font-weight: 400; font-size: .66rem; color: var(--faint); text-align: right; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
+.hours td { padding: 5px 5px; text-align: right; border-top: 1px dashed var(--line); white-space: nowrap; }
+.hours .tm { text-align: left; }
+.hours td.ic { width: 24px; }
+.hours td.ic .px { margin-left: auto; }
+.hours .mu { color: var(--muted); }
+.hours .wet { color: var(--rain); font-weight: 700; }
+.hours td.lv { color: var(--c); font-weight: 800; text-align: center; }
+.hours tr.inw td { background: var(--accent-wash); }
+.hours tr.inw td.tm { color: var(--accent); font-weight: 800; }
+.hours tr.dark td:not(.lv) { color: var(--faint); }
+.hours tr.past td { opacity: .45; }
+.more { background: none; border: 0; padding: 8px 0 0; font-weight: 700; font-size: .82rem; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); }
+
+/* pack list */
+.kit { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.kit li { display: flex; gap: 10px; align-items: baseline; font-size: .9rem; }
+.kit .b { color: var(--accent); font-weight: 800; }
+.kit small { display: block; color: var(--muted); font-size: .76rem; }
+
+.loading { margin: 0; color: var(--muted); font-size: .88rem; }
+.errp { margin: 0 0 12px; font-size: .88rem; }
+
+/* spots view */
+.bets { display: grid; gap: 8px; }
+.bet { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 9px 10px; background: var(--raise); border: 0; border-radius: 8px; }
+.bet .g { flex: 0 0 1.4ch; color: var(--c); font-weight: 800; font-size: 1.05rem; text-align: center; }
+.bet .bt { flex: 1; min-width: 0; display: grid; }
+.bet .bt b { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bet .bt small { color: var(--muted); font-size: .78rem; }
+.bet .arr { color: var(--faint); }
+.bets-sub { margin: 0 0 12px; font-size: .8rem; color: var(--muted); }
+.hintline { margin: 18px 0 0; font-size: .78rem; color: var(--faint); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 26px 12px; margin-top: 26px; }
+.acard { position: relative; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 12px 11px; display: block; min-width: 0; }
+.acard:active { border-color: var(--accent); }
+.acard.on { border-color: var(--accent); }
+.acard .hd { position: absolute; top: -.72em; left: 10px; max-width: calc(100% - 20px); padding: 0 6px; background: linear-gradient(var(--bg) 50%, var(--panel) 50%); font-weight: 800; font-size: .84rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acard .bd { display: grid; gap: 2px; min-width: 0; }
+.acard .n { font-weight: 800; font-size: 1.5rem; line-height: 1.1; }
+.acard .n small { font-size: .74rem; font-weight: 400; color: var(--muted); margin-left: 6px; }
+.acard .sub { font-size: .72rem; color: var(--muted); line-height: 1.3; }
+.wk { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin: 8px 0 4px; text-align: center; }
+.wk > span { display: grid; }
+.wk b { font-weight: 800; font-size: .95rem; line-height: 1.15; }
+.wk i { font-style: normal; font-size: .6rem; color: var(--faint); }
+
+/* bottom bar */
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; background: rgba(20,19,17,.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--line); padding: 8px max(16px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.tabbar .in { max-width: 420px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
+.tab { display: flex; align-items: center; justify-content: center; gap: 7px; background: none; border: 1px solid transparent; border-radius: 8px; padding: 8px 6px; font-weight: 700; font-size: .88rem; color: var(--faint); }
+.tab .px { width: 15px; height: 15px; }
+.tab[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-wash); }
+.add { width: 52px; height: 52px; border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; }
+.add:active { transform: scale(.95); }
+.add svg { width: 20px; height: 20px; }
+
+/* panels that drop from the top (so the phone keyboard never covers them) */
+.scrim { position: fixed; inset: 0; z-index: 10; background: rgba(0,0,0,.55); }
+.sheet {
+  position: fixed; top: calc(8px + env(safe-area-inset-top, 0px)); left: 8px; right: 8px; z-index: 11;
+  max-width: 604px; margin: 0 auto; max-height: calc(100vh - 24px - env(safe-area-inset-top, 0px)); max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px)); overflow-y: auto;
+  background: var(--panel); border: 1px solid var(--accent); border-radius: 12px; box-shadow: 0 24px 60px rgba(0,0,0,.6);
+}
+.sheet .tbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px 10px 14px; border-bottom: 1px dashed var(--line); }
+.sheet .tbar h3 { order: 1; margin: 0; font-size: .9rem; font-weight: 800; color: var(--accent); }
+.closebox { order: 2; background: none; border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; font-size: .74rem; color: var(--muted); }
+.closebox::before { content: "esc ✕"; }
+.sheet .wbody { padding: 12px; }
+.prompt { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding-left: 12px; }
+.prompt:focus-within { border-color: var(--accent); }
+.prompt > span { color: var(--accent); font-weight: 800; }
+.prompt .inp { border: 0; background: none; padding-left: 0; }
+.prompt .inp:focus-visible { outline: none; }
+.inp { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 11px 12px; font-size: 1rem; caret-color: var(--accent); }
+.inp::placeholder { color: var(--faint); }
+.inp::-webkit-search-cancel-button { filter: invert(.6); }
+.title-inp { font-size: 1.02rem; font-weight: 700; padding-block: 13px; }
+.hint { margin: 8px 2px 0; font-size: .76rem; color: var(--faint); }
+.hint.err { color: var(--poor); }
+.kbd { color: var(--muted); }
+.results { display: grid; margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); overflow: hidden; }
+.results:empty { display: none; }
+.results .hint { margin: 0; padding: 10px 12px; }
+.res { display: grid; gap: 2px; width: 100%; text-align: left; background: none; border: 0; border-top: 1px dashed var(--line); padding: 10px 12px; }
+.res:first-child { border-top: 0; }
+.res b { font-weight: 700; }
+.res span { font-size: .76rem; color: var(--muted); }
+.sugg { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; }
+.sugg p { width: 100%; margin: 0 0 2px; font-size: .7rem; color: var(--faint); letter-spacing: .07em; text-transform: uppercase; }
+.sugg button { border: 1px solid var(--line); background: none; border-radius: 6px; padding: 5px 9px; font-size: .8rem; font-weight: 700; color: var(--muted); }
+.locrow { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.locrow .hint { margin: 0; }
+.picked { margin: 0 0 4px; font-size: .78rem; color: var(--muted); }
+.fl { display: block; margin: 14px 0 6px; font-size: .78rem; font-weight: 700; color: var(--muted); }
+.fl:first-child { margin-top: 2px; }
+.sfoot { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; margin-top: 14px; }
+.sfoot .btn.default { margin-left: auto; min-width: 112px; }
+.confirm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; padding: 10px; border: 1px dashed var(--poor); border-radius: 8px; font-size: .86rem; }
+
+.opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.opts button { min-width: 50px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: none; font-weight: 800; font-size: .9rem; color: var(--muted); }
+.opts button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-wash); color: var(--accent); }
+.who { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.who button { display: grid; align-content: start; gap: 3px; padding: 10px; text-align: left; border: 1px solid var(--line); border-radius: 8px; background: none; font-weight: 800; font-size: .88rem; color: var(--muted); }
+.who button small { font-weight: 400; font-size: .74rem; line-height: 1.3; color: var(--faint); }
+.who button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-wash); color: var(--fg); }
+.who button[aria-pressed="true"] small { color: var(--muted); }
+.lim { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: .76rem; font-variant-numeric: tabular-nums; }
+.lim th, .lim td { padding: 6px 4px; border-top: 1px dashed var(--line); text-align: right; font-weight: 400; }
+.lim thead th { border-top: 0; color: var(--c); font-weight: 800; white-space: nowrap; }
+.lim tbody th { text-align: left; color: var(--muted); }
+.pfoot { display: flex; justify-content: flex-end; margin-top: 14px; }
+.prose p { margin: 0 0 11px; font-size: .84rem; line-height: 1.5; color: var(--muted); }
+.prose b { color: var(--fg); }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+  display: flex; gap: 14px; align-items: center; max-width: calc(100% - 32px);
+  background: var(--raise); color: var(--fg); border: 1px solid var(--accent); border-radius: 8px; padding: 10px 14px; font-size: .84rem; box-shadow: 0 10px 30px rgba(0,0,0,.5);
+}
+.toast span { overflow-wrap: anywhere; }
+.toast button { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 800; flex: 0 0 auto; }
+.status { margin-top: 22px; text-align: center; font-size: .74rem; color: var(--faint); }
+.status p { margin: 4px 0; }
+.status .linkbtn { padding: 2px 0; font-size: .74rem; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .cur { animation: blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .sheet { animation: drop .18s cubic-bezier(.2,.8,.2,1); }
+  @keyframes drop { from { transform: translateY(-14px); opacity: .4; } to { transform: none; opacity: 1; } }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="menubar">
+    <span class="brand">&gt; hill/wx<span class="cur" aria-hidden="true"></span></span>
+    <span class="today" id="today"></span>
+  </header>
+
+  <section id="fcView">
+    <div class="sticky">
+      <div class="filters" id="spotChips" role="group" aria-label="Choose a spot"></div>
+    </div>
+    <div id="fcBody"></div>
+  </section>
+
+  <section id="spotsView" hidden></section>
+
+  <footer class="status" id="status"></footer>
+</div>
+
+<nav class="tabbar" aria-label="Views">
+  <div class="in">
+    <button type="button" class="tab" data-view="fc" aria-pressed="true"><span data-px="tabCloud"></span>Forecast</button>
+    <button type="button" class="add" id="addBtn" aria-label="Add a spot"><svg viewBox="0 0 9 9" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true"><path d="M4 0h1v4h4v1H5v4H4V5H0V4h4z"/></svg></button>
+    <button type="button" class="tab" data-view="spots" aria-pressed="false"><span data-px="tabHill"></span>Spots</button>
+  </div>
+</nav>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<form class="sheet" id="spotSheet" hidden autocomplete="off" aria-labelledby="spotTitle">
+  <div class="tbar">
+    <button type="button" class="closebox" data-close aria-label="Close"></button>
+    <h3 id="spotTitle">Add a spot</h3>
+  </div>
+  <div class="wbody">
+    <div id="findStep">
+      <label for="q" class="sr">Search for a hill, town or trailhead</label>
+      <div class="prompt"><span aria-hidden="true">&gt;</span><input class="inp title-inp" type="search" id="q" maxlength="80" placeholder="Search a hill or town" enterkeyhint="search"></div>
+      <p class="hint">Or paste coordinates, like <span class="kbd">52.967, -6.464</span></p>
+      <div class="results" id="results" aria-live="polite"></div>
+      <div class="locrow"><button type="button" class="btn sm" id="locBtn">Use my location</button><p class="hint" id="locMsg"></p></div>
+    </div>
+    <div id="confirmStep" hidden>
+      <p class="picked" id="picked"></p>
+      <label class="fl" for="fName">Name</label>
+      <input class="inp" type="text" id="fName" maxlength="60">
+      <label class="fl" for="fElev">Forecast height, metres</label>
+      <input class="inp" type="number" id="fElev" inputmode="numeric" min="0" max="5000" step="1">
+      <p class="hint">Use the summit height for hill walks. Temperature, wind and freezing level are judged at this height.</p>
+      <div class="sfoot">
+        <button type="button" class="linkbtn" id="backBtn">Search again</button>
+        <button type="button" class="linkbtn danger" id="delBtn" hidden>Remove spot</button>
+        <button type="submit" class="btn default" id="saveBtn">Add spot</button>
+      </div>
+      <div class="confirm" id="confirm" hidden>
+        Remove this spot?
+        <button type="button" class="btn sm inv" id="confirmYes">Remove</button>
+        <button type="button" class="btn sm" id="confirmNo">Keep it</button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<div class="sheet" id="planSheet" hidden role="dialog" aria-labelledby="planTitle">
+  <div class="tbar">
+    <button type="button" class="closebox" data-close aria-label="Close"></button>
+    <h3 id="planTitle">Plan the walk</h3>
+  </div>
+  <div class="wbody">
+    <span class="fl">Walk length</span>
+    <div class="opts" id="durOpts" role="group" aria-label="Walk length"></div>
+    <span class="fl">Who's going</span>
+    <div class="who" id="whoOpts" role="group" aria-label="Who's going"></div>
+    <div id="limits"></div>
+    <div class="pfoot"><button type="button" class="btn default" data-close>Done</button></div>
+  </div>
+</div>
+
+<div class="sheet" id="aboutSheet" hidden role="dialog" aria-labelledby="aboutTitle">
+  <div class="tbar">
+    <button type="button" class="closebox" data-close aria-label="Close"></button>
+    <h3 id="aboutTitle">How ratings work</h3>
+  </div>
+  <div class="wbody prose">
+    <p>Every hour gets a rating from the forecast at your spot's height: <b>good</b>, <b>fair</b>, <b>poor</b> or <b>no go</b>. A walk is only as good as its worst hour. The <b>best window</b> is the stretch of daylight, of your walk length, with the best rating, finishing by sunset.</p>
+    <p><b>Wind on the tops</b> is estimated from the forecast wind around 750 m up, because exposed summits catch far more wind than the valley forecast. Gusts are scaled from that. Spots under 250 m use the normal 10 m wind.</p>
+    <p><b>Feels like</b> includes wind chill from that summit wind. Freezing level below the top means ice or snow is possible. Low cloud over 80% means the tops are likely in cloud.</p>
+    <p><b>Scout group</b> uses stricter limits than <b>Just me</b>. You can see both sets under Plan.</p>
+    <p>This is a planning aid, not a mountain forecast. Check Met Éireann warnings, tell someone your route, and look at the sky on the day.</p>
+    <p>To open it like an app, use your browser's Share menu and choose Add to Home Screen.</p>
+    <p><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a>, licensed CC BY 4.0.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+"use strict";
+// ---------- config ----------
+const LV = [
+  { key: "good", name: "Good",  g: "✓", c: "var(--good)", line: "Good conditions for the tops." },
+  { key: "fair", name: "Fair",  g: "~", c: "var(--fair)", line: "Fine with care. Check the points below." },
+  { key: "poor", name: "Poor",  g: "!", c: "var(--poor)", line: "Hard going on the tops. A lower route may be better." },
+  { key: "nogo", name: "No go", g: "✕", c: "var(--poor)", line: "Not a day for the tops. Pick a low-level walk or another day." }
+];
+const PROFILES = {
+  group: { name: "Scout group", blurb: "Stricter limits for leading young people", gust: [40, 55, 70], feels: [3, -3], rain: [0.5, 2], strict: true },
+  me:    { name: "Just me",     blurb: "Limits for an experienced hill walker",    gust: [50, 65, 80], feels: [0, -6], rain: [0.7, 3], strict: false }
+};
+const DURS = [2, 3, 4, 5, 6, 8];
+const DEFAULT_SPOTS = [
+  { id: "lugnaquilla", name: "Lugnaquilla", region: "Wicklow", lat: 52.9672, lon: -6.4644, elev: 925 },
+  { id: "djouce", name: "Djouce", region: "Wicklow", lat: 53.1306, lon: -6.2397, elev: 725 },
+  { id: "sugarloaf", name: "Great Sugar Loaf", region: "Wicklow", lat: 53.1514, lon: -6.1525, elev: 501 },
+  { id: "loughdan", name: "Lough Dan", region: "Wicklow", lat: 53.0700, lon: -6.2780, elev: 230 },
+  { id: "croaghpatrick", name: "Croagh Patrick", region: "Mayo", lat: 53.7597, lon: -9.6586, elev: 764 }
+];
+const SUGGEST = ["Carrauntoohil", "Galtymore", "Mweelrea", "Errigal", "Slieve Donard", "Mullaghcleevaun", "Tonelagee", "Kippure", "Glendalough", "Ben Bulben"];
+const HOURLY = ["temperature_2m", "apparent_temperature", "precipitation", "precipitation_probability", "weather_code", "cloud_cover_low", "visibility", "wind_speed_10m", "wind_gusts_10m", "wind_direction_10m", "freezing_level_height"];
+const HOURLY_MIN = ["temperature_2m", "apparent_temperature", "precipitation", "precipitation_probability", "weather_code", "cloud_cover_low", "wind_speed_10m", "wind_gusts_10m", "wind_direction_10m"];
+const DAILY = ["sunrise", "sunset", "uv_index_max"];
+const STALE = 30 * 60 * 1000;
+// A request that never leaves the device is usually a preview (like Claude's) that blocks outside data.
+const FRAMED = (() => { try { return window.self !== window.top; } catch (_) { return true; } })();
+const BLOCKED_MSG = FRAMED
+  ? "This preview blocks live weather data. Open the file from a link in Safari or Chrome instead."
+  : "Couldn't reach Open-Meteo. If you're viewing this inside Claude or another app's preview, open it in Safari or Chrome instead. Otherwise, check your connection.";
+const FEATURE = { MT: "mountain", MTS: "mountains", HLL: "hill", HLLS: "hills", PK: "peak", PKS: "peaks", RDGE: "ridge", LK: "lake", LKS: "lakes", VAL: "valley", PASS: "pass", CLF: "cliff", SPUR: "spur", UPLD: "upland", PLAT: "plateau", FRST: "forest", PRK: "park", ISL: "island", BCH: "beach", BAY: "bay", PPL: "town", PPLA: "town", PPLA2: "town", PPLA3: "town", PPLC: "city", PPLX: "area", PPLL: "village" };
+
+// ---------- pixel icons ----------
+const CT = ["............", "......ccc...", "..cc.ccccc..", ".ccccccccc..", ".cccccccccc.", "cccccccccccc", ".cccccccccc."];
+const BLANK = "............";
+function moonRows() {
+  const out = [];
+  for (let y = 0; y < 12; y++) {
+    let s = "";
+    for (let x = 0; x < 12; x++) {
+      const a = (x + .5 - 6) ** 2 + (y + .5 - 6) ** 2 <= 21;
+      const b = (x + .5 - 8.4) ** 2 + (y + .5 - 4.4) ** 2 <= 17;
+      s += a && !b ? "m" : ".";
+    }
+    out.push(s);
+  }
+  return out;
+}
+const PIX = {
+  sun: [".....yy.....", ".y...yy...y.", "..y......y..", "....yyyy....", "...yyyyyy...", "yy.yyyyyy.yy", "yy.yyyyyy.yy", "...yyyyyy...", "....yyyy....", "..y......y..", ".y...yy...y.", ".....yy....."],
+  moon: moonRows(),
+  part: [BLANK, "..y..y......", "...yy.......", ".yyyyyy.....", "..yyyy......", ".yyyy.ccc...", "..y.ccccccc.", "...cccccccc.", "..cccccccccc", "..cccccccccc", "...cccccccc.", BLANK],
+  cloud: [BLANK, BLANK, BLANK, ...CT.slice(1), BLANK, BLANK, BLANK],
+  fog: [BLANK, BLANK, "..cccccccc..", BLANK, "cccccccccc..", BLANK, "..cccccccccc", BLANK, "cccccccccc..", BLANK, "...cccccc...", BLANK],
+  drizzle: [...CT, BLANK, "...b.....b..", BLANK, "......b.....", BLANK],
+  rain: [...CT, BLANK, "..b...b...b.", ".b...b...b..", "....b...b...", "...b...b...."],
+  showers: ["..y..y......", "...yy.......", ".yyyyy.ccc..", "..yyy.ccccc.", ".yy.cccccccc", "...ccccccccc", "..cccccccccc", "...cccccccc.", BLANK, "...b...b..b.", "..b...b..b..", BLANK],
+  snow: [...CT, BLANK, "..w...w...w.", BLANK, "....w...w...", BLANK],
+  thunder: [...CT, ".....zz.....", "....zz......", "...zzzzz....", ".....zz.....", "....z......."],
+  tabCloud: [".........", "....xxx..", "..xx.xxx.", ".xxxxxxx.", "xxxxxxxxx", "xxxxxxxxx", ".xxxxxxx.", ".........", "........."],
+  tabHill: [".........", "...x.....", "..xxx....", "..xxx.x..", ".xxxxxxx.", ".xxxxxxx.", "xxxxxxxxx", "xxxxxxxxx", "........."]
+};
+const PXC = { y: "var(--sun)", c: "var(--muted)", b: "var(--rain)", w: "var(--snow)", m: "var(--muted)", z: "var(--sun)", x: "currentColor" };
+function pxSvg(rows) {
+  const byC = {};
+  rows.forEach((row, y) => {
+    for (let x = 0; x < row.length;) {
+      const ch = row[x];
+      if (ch === ".") { x++; continue; }
+      let n = 1;
+      while (row[x + n] === ch) n++;
+      (byC[ch] ||= []).push(`M${x} ${y}h${n}v1h-${n}z`);
+      x += n;
+    }
+  });
+  const paths = Object.entries(byC).map(([c, d]) => `<path d="${d.join("")}" style="fill:${PXC[c]}"/>`).join("");
+  return `<svg class="px" viewBox="0 0 ${rows[0].length} ${rows.length}" shape-rendering="crispEdges" aria-hidden="true">${paths}</svg>`;
+}
+const ICON = Object.fromEntries(Object.entries(PIX).map(([k, rows]) => [k, pxSvg(rows)]));
+function sky(code, isDay) {
+  if (code == null) return { l: "No data", i: null };
+  if (code === 0) return { l: "Clear", i: isDay ? "sun" : "moon" };
+  if (code === 1) return { l: "Mostly clear", i: isDay ? "part" : "moon" };
+  if (code === 2) return { l: "Partly cloudy", i: isDay ? "part" : "cloud" };
+  if (code === 3) return { l: "Overcast", i: "cloud" };
+  if (code === 45 || code === 48) return { l: "Fog", i: "fog" };
+  if (code >= 51 && code <= 57) return { l: "Drizzle", i: "drizzle" };
+  if (code === 66 || code === 67) return { l: "Freezing rain", i: "rain" };
+  if (code >= 61 && code <= 65) return { l: code === 65 ? "Heavy rain" : "Rain", i: "rain" };
+  if (code >= 71 && code <= 77) return { l: "Snow", i: "snow" };
+  if (code >= 80 && code <= 82) return { l: code === 82 ? "Heavy showers" : "Showers", i: isDay ? "showers" : "rain" };
+  if (code === 85 || code === 86) return { l: "Snow showers", i: "snow" };
+  if (code >= 95) return { l: "Thunder", i: "thunder" };
+  return { l: "Cloudy", i: "cloud" };
+}
+
+// ---------- helpers ----------
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pad = n => String(n).padStart(2, "0");
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const rd = v => (v == null || Number.isNaN(v)) ? "–" : String(Math.round(v) || 0).replace("-", "−");
+const hh = h => pad(((h % 24) + 24) % 24) + ":00";
+const fmtT = f => { const t = Math.round(f * 60); return pad(Math.floor(t / 60) % 24) + ":" + pad(t % 60); };
+const fmtDur = f => { const t = Math.max(0, Math.round(f * 60)), h = Math.floor(t / 60), m = t % 60; return h ? `${h} h ${pad(m)} m` : `${m} m`; };
+const compass = d => d == null ? "" : ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][Math.round(d / 45) % 8];
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const sum = a => a.reduce((x, y) => x + y, 0);
+const dateOf = d => new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10));
+const wdShort = d => dateOf(d).toLocaleDateString("en-IE", { weekday: "short" });
+const dayLong = d => dateOf(d).toLocaleDateString("en-IE", { weekday: "short", day: "numeric", month: "short" });
+const dayLabel = (i, d) => i === 0 ? "Today" : i === 1 ? "Tomorrow" : dayLong(d);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (_) {} }
+};
+
+// local time in the spot's own time zone (correct across the clock change)
+const fmtCache = {};
+function zoneFmt(tz) {
+  if (!(tz in fmtCache)) {
+    try { fmtCache[tz] = new Intl.DateTimeFormat("en-GB", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }); }
+    catch (_) { fmtCache[tz] = null; }
+  }
+  return fmtCache[tz];
+}
+function local(sec, m) {
+  const f = zoneFmt(m.tz);
+  let y, mo, d, h, mi;
+  if (f) {
+    const o = {};
+    for (const p of f.formatToParts(new Date(sec * 1000))) o[p.type] = p.value;
+    y = o.year; mo = o.month; d = o.day; h = +o.hour % 24; mi = +o.minute;
+  } else {
+    const t = new Date((sec + m.off) * 1000);
+    y = t.getUTCFullYear(); mo = pad(t.getUTCMonth() + 1); d = pad(t.getUTCDate()); h = t.getUTCHours(); mi = t.getUTCMinutes();
+  }
+  return { d: `${y}-${mo}-${d}`, h, f: h + mi / 60 };
+}
+
+// ---------- forecast model ----------
+function buildModel(j, spot) {
+  const H = j.hourly || {}, D = j.daily || {};
+  const v = (a, i) => (a && a[i] != null ? a[i] : null);
+  const m = { tz: j.timezone || "UTC", off: j.utc_offset_seconds || 0, elev: spot.elev, aloft: !!H.wind_speed_925hPa, hours: [], byDay: {}, days: [], _who: null };
+  (H.time || []).forEach((sec, i) => {
+    const L = local(sec, m);
+    const x = {
+      d: L.d, h: L.h,
+      temp: v(H.temperature_2m, i), feel: v(H.apparent_temperature, i),
+      p: v(H.precipitation, i), pp: v(H.precipitation_probability, i), code: v(H.weather_code, i),
+      low: v(H.cloud_cover_low, i), vis: v(H.visibility, i),
+      w: v(H.wind_speed_10m, i), gu: v(H.wind_gusts_10m, i), dir: v(H.wind_direction_10m, i),
+      fz: v(H.freezing_level_height, i), w925: v(H.wind_speed_925hPa, i), w850: v(H.wind_speed_850hPa, i)
+    };
+    m.hours.push(x);
+    (m.byDay[L.d] ||= [])[L.h] = x;
+  });
+  (D.time || []).forEach((sec, i) => {
+    const rise = v(D.sunrise, i), set = v(D.sunset, i);
+    const t = new Date((sec + m.off) * 1000);
+    const d = rise ? local(rise, m).d : `${t.getUTCFullYear()}-${pad(t.getUTCMonth() + 1)}-${pad(t.getUTCDate())}`;
+    m.days.push({ d, rise: rise ? local(rise, m).f : 7, set: set ? local(set, m).f : 19, uv: v(D.uv_index_max, i) });
+  });
+  m.days = m.days.filter(x => m.byDay[x.d]).slice(0, 7);
+  return m;
+}
+
+function windChill(t, v) {
+  if (t == null || v == null || t > 10 || v < 4.8) return null;
+  const p = Math.pow(v, 0.16);
+  return 13.12 + 0.6215 * t - 11.37 * p + 0.3965 * t * p;
+}
+function interp(pts, x) {
+  if (x <= pts[0][0]) return pts[0][1];
+  for (let i = 1; i < pts.length; i++) {
+    const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+    if (x <= x1) return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+  }
+  return pts[pts.length - 1][1];
+}
+// Summits catch the wind higher up: blend from the 10 m wind towards the 925/850 hPa wind by height.
+function tops(x, elev) {
+  const w10 = x.w ?? 0, g10 = x.gu ?? w10 * 1.45;
+  let tw = w10;
+  if (elev >= 250 && x.w925 != null) {
+    const pts = [[0, w10], [760, 0.85 * x.w925]];
+    if (x.w850 != null) pts.push([1460, 0.85 * x.w850]);
+    tw = Math.max(w10, interp(pts, elev));
+  }
+  const gf = w10 >= 5 ? clamp(g10 / w10, 1.3, 1.6) : 1.45;
+  return { tw, tg: Math.max(g10, tw * gf) };
+}
+const SNOWCODES = new Set([71, 73, 75, 77, 85, 86]);
+function evalHour(x, elev, P) {
+  const { tw, tg } = tops(x, elev);
+  let feels = x.feel ?? x.temp;
+  const wc = windChill(x.temp, tw);
+  if (wc != null && (feels == null || wc < feels)) feels = wc;
+  const p = x.p ?? 0, pp = x.pp ?? 0, code = x.code ?? -1;
+  const freezing = x.fz != null && x.fz < elev;
+  const snowy = SNOWCODES.has(code) || (freezing && p >= 0.2);
+  const f = {
+    wind: tg >= P.gust[2] ? 3 : tg >= P.gust[1] ? 2 : tg >= P.gust[0] ? 1 : 0,
+    rain: p >= P.rain[1] ? 2 : (p >= P.rain[0] || (pp >= 70 && p >= 0.2)) ? 1 : 0,
+    cold: feels == null ? 0 : feels <= P.feels[1] ? 2 : feels <= P.feels[0] ? 1 : 0,
+    cloud: (x.vis != null && x.vis < 200) ? 2 : ((x.low != null && x.low >= 80) || (x.vis != null && x.vis < 1000) || code === 45 || code === 48) ? 1 : 0,
+    ice: snowy ? ((code === 75 || code === 86 || P.strict) ? 2 : 1) : freezing ? 1 : 0,
+    storm: code >= 95 ? 3 : (code === 66 || code === 67) ? 2 : 0,
+    heat: x.temp != null && x.temp >= 27 ? 1 : 0
+  };
+  const level = Math.max(f.wind, f.rain, f.cold, f.cloud, f.ice, f.storm, f.heat);
+  const score = tg / P.gust[2] + p * 0.8 + pp / 250 + f.cloud * 0.4
+    + (feels != null ? Math.max(0, P.feels[0] + 4 - feels) * 0.05 : 0) + (freezing ? 0.3 : 0);
+  return { level, score, f, tw, tg, feels, freezing, snowy };
+}
+function evals(m, who) {
+  if (m._who === who) return;
+  const P = PROFILES[who];
+  m.hours.forEach(x => { x.ev = evalHour(x, m.elev, P); });
+  m._who = who;
+}
+const nowIn = m => local(Date.now() / 1000, m);
+
+// Best window of `dur` hours that starts after sunrise (or now) and ends by sunset.
+function plan(m, di, dur, who, now) {
+  evals(m, who);
+  const day = m.days[di];
+  if (!day) return null;
+  const hrs = m.byDay[day.d] || [];
+  const isToday = day.d === now.d;
+  const dawn = Math.ceil(day.rise - 0.25);
+  const first = isToday ? Math.max(dawn, Math.ceil(now.f - 0.25)) : dawn;
+  const c = [];
+  for (let s = first; s + dur <= day.set + 1e-6; s++) {
+    const hs = [];
+    for (let k = 0; k < dur; k++) if (hrs[s + k]) hs.push(hrs[s + k]);
+    if (hs.length < dur) continue;
+    let level = 0, score = 0;
+    for (const x of hs) { level = Math.max(level, x.ev.level); score += x.ev.score; }
+    c.push({ s, e: s + dur, level, score: score / dur, hs });
+  }
+  const base = { day, di, isToday, dur };
+  if (!c.length) return { ...base, none: isToday && dawn + dur <= day.set + 1e-6 ? "late" : "short" };
+  c.sort((a, b) => a.level - b.level || Math.round(a.score * 10) - Math.round(b.score * 10) || a.s - b.s);
+  return { ...base, ...c[0] };
+}
+function plansFor(m) {
+  const now = nowIn(m);
+  return m.days.map((_, i) => plan(m, i, settings.dur, settings.who, now));
+}
+function bestOf(ps) {
+  let b = null;
+  for (const p of ps) if (p && !p.none && (!b || p.level < b.level || (p.level === b.level && p.score < b.score - 0.05))) b = p;
+  return b;
+}
+
+// What drives the rating, worst first
+function why(p, m) {
+  const hs = p.hs, out = [];
+  const lvOf = k => Math.max(...hs.map(x => x.ev.f[k]));
+  const span = a => `${hh(a[0].h)}–${hh(a[a.length - 1].h + 1)}`;
+  // wind
+  const wx = hs.reduce((a, x) => x.ev.tg > a.ev.tg ? x : a, hs[0]);
+  const avgW = sum(hs.map(x => x.ev.tw)) / hs.length;
+  out.push({ lv: lvOf("wind"), t: `Gusts to ${rd(wx.ev.tg)} km/h on the tops`, s: `${compass(wx.dir) ? compass(wx.dir) + " wind, " : ""}averaging ${rd(avgW)} km/h${m.aloft || m.elev < 250 ? "" : ". Valley forecast only: expect more on top"}` });
+  // rain
+  const tot = sum(hs.map(x => x.p || 0)), maxpp = Math.max(...hs.map(x => x.pp || 0));
+  const wet = hs.filter(x => (x.p || 0) >= 0.2);
+  if (tot < 0.2) out.push({ lv: lvOf("rain"), t: maxpp >= 40 ? "Mostly dry" : "Dry", s: `chance of rain up to ${maxpp}%` });
+  else {
+    const hv = hs.reduce((a, x) => (x.p || 0) > (a.p || 0) ? x : a, hs[0]);
+    out.push({ lv: lvOf("rain"), t: `${tot.toFixed(1)} mm of rain over the walk`, s: `${wet.length === hs.length ? "on and off throughout" : "from " + hh(wet[0].h)}, heaviest around ${hh(hv.h)}` });
+  }
+  // cold
+  const cx = hs.reduce((a, x) => (x.ev.feels ?? 99) < (a.ev.feels ?? 99) ? x : a, hs[0]);
+  const temps = hs.map(x => x.temp).filter(t => t != null);
+  out.push({ lv: lvOf("cold"), t: `Feels like ${rd(cx.ev.feels)}°C on top`, s: temps.length ? `air ${rd(Math.min(...temps))} to ${rd(Math.max(...temps))}°C at ${m.elev} m` : "" });
+  // cloud
+  const cl = hs.filter(x => x.ev.f.cloud);
+  const vis = hs.map(x => x.vis).filter(x => x != null);
+  const minVis = vis.length ? Math.min(...vis) : null;
+  if (cl.length) out.push({ lv: lvOf("cloud"), t: cl.length === hs.length ? "Tops likely in cloud all walk" : `Tops likely in cloud ${span(cl)}`, s: minVis != null && minVis < 5000 ? `visibility down to ${minVis < 1000 ? Math.round(minVis / 10) * 10 + " m" : (minVis / 1000).toFixed(1) + " km"}` : "navigate by map and compass" });
+  else if (hs.some(x => x.low != null)) out.push({ lv: 0, t: "Tops clear of low cloud", s: `low cloud up to ${Math.max(...hs.map(x => x.low ?? 0))}%` });
+  // ice and snow
+  const fz = hs.filter(x => x.ev.freezing);
+  if (fz.length) out.push({ lv: lvOf("ice"), t: fz.some(x => x.ev.snowy) ? "Snow or ice likely on top" : "Freezing on top: watch for ice", s: `freezing level ${rd(Math.min(...fz.map(x => x.fz)))} m, top ${m.elev} m` });
+  // storms
+  const st = hs.filter(x => x.ev.f.storm);
+  if (st.length) out.push({ lv: lvOf("storm"), t: st.some(x => x.code >= 95) ? `Thunder possible from ${hh(st[0].h)}` : `Freezing rain from ${hh(st[0].h)}`, s: "stay off high, open ground" });
+  if (hs.some(x => x.ev.f.heat)) out.push({ lv: 1, t: "Hot for walking", s: "carry extra water" });
+  return out.map((o, i) => ({ ...o, i })).sort((a, b) => b.lv - a.lv || a.i - b.i);
+}
+
+function kit(p, m) {
+  const hs = p.hs, d = p.day, out = [];
+  const tot = sum(hs.map(x => x.p || 0)), maxpp = Math.max(...hs.map(x => x.pp || 0));
+  const minF = Math.min(...hs.map(x => x.ev.feels ?? 99));
+  const cloud = hs.some(x => x.ev.f.cloud), ice = hs.some(x => x.ev.f.ice);
+  if (tot >= 0.2 || maxpp >= 40) out.push(["Waterproof jacket and overtrousers", tot >= 0.2 ? `${tot.toFixed(1)} mm forecast` : `up to ${maxpp}% chance of rain`]);
+  if (minF <= 6) out.push(["Hat and gloves", `feels like ${rd(minF)}°C on top`]);
+  if (minF <= 2 || p.level >= 2) out.push([settings.who === "group" ? "Spare warm layers and a group shelter" : "Spare warm layer and a survival bag", p.level >= 2 ? "conditions are poor on top" : "cold on the tops"]);
+  if (cloud) out.push(["Map and compass", "tops likely in cloud"]);
+  if (ice) out.push(["Microspikes", "freezing on top"]);
+  const mon = +d.d.slice(5, 7), late = p.e >= d.set - 0.75;
+  if (late || mon >= 10 || mon <= 3) out.push(["Head torch", late ? `you finish close to sunset, ${fmtT(d.set)}` : `sunset ${fmtT(d.set)}`]);
+  if ((d.uv ?? 0) >= 3) out.push(["Sun cream and sunglasses", `UV index ${Math.round(d.uv)}`]);
+  if (!out.length) out.push(["The usual kit", "water, food and a warm layer"]);
+  return out;
+}
+
+// ---------- state ----------
+let spots = [], sel = null, selDay = 0, view = "fc", showAll = false, seeded = false;
+let settings = { dur: 4, who: "group" };
+const fc = {};        // spot id -> { key, at, m, loading, err }
+const inflight = {};
+const cur = () => spots.find(s => s.id === sel) || null;
+const spotKey = s => `${s.lat},${s.lon},${s.elev}`;
+const saveSpots = () => store.set("hillwx-spots", spots);
+
+// ---------- loading ----------
+function fcUrl(s, full) {
+  const aloft = s.elev >= 250 ? (s.elev > 760 ? ["wind_speed_925hPa", "wind_speed_850hPa"] : ["wind_speed_925hPa"]) : [];
+  const hourly = full ? [...HOURLY, ...aloft] : HOURLY_MIN;
+  return `https://api.open-meteo.com/v1/forecast?latitude=${s.lat}&longitude=${s.lon}&elevation=${Math.round(s.elev)}`
+    + `&hourly=${hourly.join(",")}&daily=${DAILY.join(",")}&timezone=auto&timeformat=unixtime&forecast_days=7&wind_speed_unit=kmh`;
+}
+async function fetchForecast(s) {
+  let r = await fetch(fcUrl(s, true));
+  if (r.status === 400) r = await fetch(fcUrl(s, false));
+  if (!r.ok) {
+    let reason = "";
+    try { reason = (await r.json()).reason || ""; } catch (_) {}
+    throw new Error(reason ? `Open-Meteo said: ${reason}` : `Open-Meteo answered ${r.status}. Try again shortly.`);
+  }
+  return r.json();
+}
+function safeModel(data, s) { try { const m = buildModel(data, s); return m.days.length ? m : null; } catch (_) { return null; } }
+function load(s, force) {
+  const key = spotKey(s);
+  let S = fc[s.id];
+  if (!S || S.key !== key) {
+    const c = store.get("hillwx-fc-" + s.id, null);
+    const m = c && c.key === key && c.data ? safeModel(c.data, s) : null;
+    S = fc[s.id] = m ? { key, at: c.at, m } : { key };
+  }
+  if (!force && S.m && Date.now() - S.at < STALE) return Promise.resolve();
+  if (inflight[s.id]) return inflight[s.id];
+  S.loading = true; S.err = null; render();
+  inflight[s.id] = (async () => {
+    try {
+      const data = await fetchForecast(s);
+      const m = buildModel(data, s);
+      if (!m.days.length) throw new Error("The forecast came back empty. Try again shortly.");
+      Object.assign(S, { at: Date.now(), m, err: null });
+      store.set("hillwx-fc-" + s.id, { key, at: S.at, data });
+    } catch (e) {
+      S.err = e instanceof TypeError ? BLOCKED_MSG : (e.message || "Something went wrong loading the forecast.");
+    } finally {
+      S.loading = false; delete inflight[s.id]; render();
+    }
+  })();
+  return inflight[s.id];
+}
+async function loadAll(force) {
+  const c = cur();
+  if (c) await load(c, force);
+  const rest = spots.filter(s => s.id !== sel);
+  for (let i = 0; i < rest.length; i += 3) await Promise.all(rest.slice(i, i + 3).map(s => load(s, force)));
+}
+
+// ---------- render ----------
+function render() {
+  $("today").textContent = new Date().toLocaleDateString("en-IE", { weekday: "short", day: "numeric", month: "short" });
+  document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === view));
+  $("fcView").hidden = view !== "fc";
+  $("spotsView").hidden = view !== "spots";
+  if (view === "fc") { const m = fc[sel]?.m; if (m) selDay = Math.min(selDay, m.days.length - 1); renderChips(); renderFc(); } else renderSpots();
+  renderStatus();
+}
+function keepScroll(el, fn) { const x = el.scrollLeft; fn(); el.scrollLeft = x; }
+
+function renderChips() {
+  const cm = fc[sel]?.m, selDate = cm?.days[selDay]?.d;
+  const html = spots.map(s => {
+    const m = fc[s.id]?.m;
+    let g = "·", c = "var(--faint)", nm = fc[s.id]?.err ? "no forecast" : "loading";
+    if (m) {
+      let di = selDate ? m.days.findIndex(d => d.d === selDate) : selDay;
+      if (di < 0) di = Math.min(selDay, m.days.length - 1);
+      const p = plan(m, di, settings.dur, settings.who, nowIn(m));
+      if (p && !p.none) { g = LV[p.level].g; c = LV[p.level].c; nm = LV[p.level].name; }
+      else nm = p?.none === "late" ? "too late today" : "not enough daylight";
+    }
+    return `<button type="button" class="fchip" data-spot="${s.id}" aria-pressed="${s.id === sel}" aria-label="${esc(s.name)}: ${esc(nm)}"><b class="cg" style="color:${c}" aria-hidden="true">${g}</b>${esc(s.name)}</button>`;
+  }).join("");
+  keepScroll($("spotChips"), () => { $("spotChips").innerHTML = html; });
+}
+
+function renderFc() {
+  const s = cur();
+  if (!s) {
+    $("fcBody").innerHTML = `<section class="win focusbox"><div class="tbar"><h2>No spots yet</h2></div><div class="wbody">
+      <p class="errp">Add a hill, a town or your location to see when it's good to walk.</p>
+      <button type="button" class="btn default" data-add>Add a spot</button></div></section>`;
+    return;
+  }
+  const S = fc[s.id] || {};
+  if (!S.m) {
+    $("fcBody").innerHTML = `<section class="win focusbox"><div class="tbar"><h2>${esc(s.name)}</h2></div>
+      <button type="button" class="tbar-r" data-edit="${s.id}" aria-label="Edit ${esc(s.name)}">${s.elev} m · <u>edit</u></button>
+      <div class="wbody">${S.err
+        ? `<p class="errp">${esc(S.err)}</p><button type="button" class="btn sm" data-refresh>Try again</button>`
+        : `<p class="loading">Fetching the forecast for ${s.elev} m <span class="cur" aria-hidden="true"></span></p>`}</div></section>`;
+    return;
+  }
+  const m = S.m, now = nowIn(m);
+  const p = plan(m, Math.min(selDay, m.days.length - 1), settings.dur, settings.who, now);
+  $("fcBody").innerHTML = verdictBox(s, m, p, now) + weekBox(m) + daylightBox(p, now) + hoursBox(m, p, now) + (p.none ? "" : kitBox(p, m));
+}
+
+function weekBox(m) {
+  const rows = plansFor(m).map((p, i) => {
+    const d = m.days[i], ok = p && !p.none, L = ok ? LV[p.level] : null;
+    let stats;
+    if (ok) {
+      const g = Math.max(...p.hs.map(x => x.ev.tg)), f = Math.min(...p.hs.map(x => x.ev.feels ?? 99)), r = sum(p.hs.map(x => x.p || 0));
+      stats = `gusts ${rd(g)} km/h · feels ${rd(f)}° · ${r < 0.2 ? "dry" : r.toFixed(1) + " mm"}`;
+    } else stats = p?.none === "late" ? "too late to start today" : "not enough daylight";
+    const day = i === 0 ? "Today" : i === 1 ? "Tomorrow" : `${wdShort(d.d)} ${+d.d.slice(8, 10)}`;
+    return `<button type="button" class="wrow" data-day="${i}" data-scroll aria-pressed="${selDay === i}" style="--c:${ok ? L.c : "var(--faint)"}">
+      <span class="wd">${esc(day)}</span>
+      <span class="wr"><b aria-hidden="true">${ok ? L.g : "·"}</b>${ok ? L.name : "–"}</span>
+      <span class="ww num">${ok ? `${hh(p.s)}–${hh(p.e)}` : ""}</span>
+      <span class="ws">${esc(stats)}</span></button>`;
+  }).join("");
+  return `<section class="win" aria-labelledby="wkt"><div class="tbar"><h2 id="wkt">This week</h2></div><div class="wlist">${rows}</div></section>`;
+}
+
+function verdictBox(s, m, p, now) {
+  const P = PROFILES[settings.who], d = p.day;
+  const head = `<div class="fhead"><p><b>${esc(dayLabel(p.di, d.d))}</b> · ${settings.dur} h walk · ${esc(P.name)}</p><button type="button" class="btn sm" data-plan>Plan</button></div>`;
+  let main;
+  if (p.none) {
+    let next = null;
+    for (let j = p.di + 1; j < m.days.length && !next; j++) { const q = plan(m, j, settings.dur, settings.who, now); if (q && !q.none) next = q; }
+    main = `<div class="vhead"><span class="vword muted">${p.none === "late" ? "Too late" : "Too short"}</span></div>
+      <p class="vnote">${p.none === "late"
+        ? `Not enough light left today for a ${settings.dur} h walk. Sunset is ${fmtT(d.set)}.`
+        : `Only ${fmtDur(d.set - d.rise)} of daylight, less than a ${settings.dur} h walk. Try a shorter walk under Plan.`}</p>
+      ${next ? `<button type="button" class="nextday" data-day="${next.di}" style="--c:${LV[next.level].c}"><span class="g" aria-hidden="true">${LV[next.level].g}</span>${esc(dayLabel(next.di, next.day.d))}: ${LV[next.level].name}, ${hh(next.s)}–${hh(next.e)}</button>` : ""}`;
+  } else {
+    const L = LV[p.level];
+    main = `<div class="vhead" style="--c:${L.c}">
+        <div class="vleft"><span class="vtag" aria-hidden="true">[${L.g}]</span><span class="vword">${L.name}</span></div>
+        <div class="vwin"><span class="lbl">Best window</span><b class="num">${hh(p.s)}–${hh(p.e)}</b><small>ends ${fmtDur(d.set - p.e)} before sunset</small></div>
+      </div>
+      <p class="vnote">${esc(L.line)}</p>`;
+  }
+  let nowLine = "";
+  if (p.isToday) {
+    const x = (m.byDay[now.d] || [])[now.h];
+    if (x) {
+      const sk = sky(x.code, now.f >= d.rise && now.f < d.set);
+      nowLine = `<p class="nowl"><span class="lbl">Now on top</span>${rd(x.temp)}°C, feels ${rd(x.ev.feels)}° · gusts ${rd(x.ev.tg)} km/h · ${esc(sk.l.toLowerCase())}</p>`;
+    }
+  }
+  const list = p.none ? "" : `<ul class="why">${why(p, m).map(w => `<li style="--c:${LV[w.lv].c}"><span class="tr" aria-hidden="true">⎿</span><span class="lv"><span aria-hidden="true">${LV[w.lv].g}</span><span class="sr">${LV[w.lv].name}:</span></span><span>${esc(w.t)}${w.s ? `<small>${esc(w.s)}</small>` : ""}</span></li>`).join("")}</ul>`;
+  return `<section class="win focusbox" id="vbox" aria-labelledby="vt">
+    <div class="tbar"><h2 id="vt">${esc(s.name)}</h2></div>
+    <button type="button" class="tbar-r" data-edit="${s.id}" aria-label="Edit ${esc(s.name)}">${s.elev} m · <u>edit</u></button>
+    <div class="wbody">${head}${main}${hourStrip(m, p, now)}${nowLine}${list}</div></section>`;
+}
+
+function hourStrip(m, p, now) {
+  const d = p.day, hrs = m.byDay[d.d] || [];
+  const h0 = Math.max(0, Math.floor(d.rise)), h1 = Math.min(23, Math.ceil(d.set) - 1);
+  const n = h1 - h0 + 1;
+  if (n < 1) return "";
+  let cells = "", labs = "";
+  for (let h = h0; h <= h1; h++) {
+    const x = hrs[h], col = h - h0 + 1, L = x && x.ev ? LV[x.ev.level] : null;
+    const past = p.isToday && h + 1 <= now.f;
+    cells += `<i class="hc ${L ? L.key : "nd"}${past ? " past" : ""}" style="grid-column:${col}${L ? `;--c:${L.c}` : ""}"></i>`;
+    labs += `<span class="hl${!p.none && h >= p.s && h < p.e ? " on" : ""}" style="grid-column:${col}">${pad(h)}</span>`;
+  }
+  const brk = p.none ? "" : `<span class="hb" style="grid-column:${p.s - h0 + 1} / ${p.e - h0 + 1}"></span>`;
+  return `<div class="hstrip" style="--n:${n}" aria-hidden="true">${cells}${brk}${labs}</div>
+    <p class="legend" aria-hidden="true">${LV.map(L => `<span style="--c:${L.c}"><b>${L.g}</b> ${L.name.toLowerCase()}</span>`).join("")}</p>`;
+}
+
+function daylightBox(p, now) {
+  const d = p.day, k = 100 / 24;
+  const lit = `<i class="lit" style="left:${d.rise * k}%;width:${(d.set - d.rise) * k}%"></i>`;
+  const wnd = p.none ? "" : `<i class="wnd" style="left:${p.s * k}%;width:${(p.e - p.s) * k}%"></i>`;
+  const nowM = p.isToday ? `<i class="nowm" style="left:${clamp(now.f * k, 0, 100)}%"></i>` : "";
+  const latest = d.set - settings.dur;
+  let note;
+  if (latest < d.rise) note = `Not enough daylight for a ${settings.dur} h walk.`;
+  else if (p.isToday && now.f > latest) note = `The latest start for a ${settings.dur} h walk was <b>${fmtT(latest)}</b>.`;
+  else note = `Start by <b>${fmtT(latest)}</b> to finish a ${settings.dur} h walk in daylight.`;
+  if (p.isToday) note += now.f >= d.set ? " The sun has set." : now.f < d.rise ? ` Sunrise in ${fmtDur(d.rise - now.f)}.` : ` ${fmtDur(d.set - now.f)} of light left.`;
+  return `<section class="win" aria-labelledby="dlt"><div class="tbar"><h2 id="dlt">Daylight · ${esc(dayLabel(p.di, d.d))}</h2></div><div class="wbody">
+    <div class="dl"><span><span class="lbl">Sunrise</span><b class="num">${fmtT(d.rise)}</b></span><span><span class="lbl">Sunset</span><b class="num">${fmtT(d.set)}</b></span><span><span class="lbl">Light</span><b class="num">${fmtDur(d.set - d.rise)}</b></span></div>
+    <div class="dbar" aria-hidden="true"><div class="trk">${lit}${wnd}</div>${nowM}</div>
+    <div class="dticks" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+    <p class="dnote">${note}</p>
+  </div></section>`;
+}
+
+function hoursBox(m, p, now) {
+  const d = p.day, hrs = m.byDay[d.d] || [];
+  const a = showAll ? 0 : Math.max(0, Math.floor(d.rise) - 1), b = showAll ? 23 : Math.min(23, Math.ceil(d.set));
+  let rows = "";
+  for (let h = a; h <= b; h++) {
+    const x = hrs[h];
+    if (!x) continue;
+    const lit = h + 0.5 >= d.rise && h + 0.5 < d.set;
+    const sk = sky(x.code, lit), L = LV[x.ev.level];
+    const inw = !p.none && h >= p.s && h < p.e, past = p.isToday && h + 1 <= now.f;
+    const rain = x.p == null ? "–" : x.p < 0.05 ? "0" : x.p.toFixed(1);
+    rows += `<tr class="${[inw && "inw", !lit && "dark", past && "past"].filter(Boolean).join(" ")}">
+      <td class="tm">${hh(h)}</td>
+      <td class="ic">${sk.i ? ICON[sk.i] : ""}<span class="sr">${esc(sk.l)}</span></td>
+      <td>${rd(x.temp)}°</td><td class="mu">${rd(x.ev.feels)}°</td>
+      <td class="${(x.p ?? 0) >= 0.2 ? "wet" : "mu"}">${rain}</td>
+      <td class="mu">${x.pp == null ? "–" : x.pp + "%"}</td>
+      <td class="mu">${compass(x.dir)}</td>
+      <td>${rd(x.ev.tw)}<span class="mu">/</span>${rd(x.ev.tg)}</td>
+      <td class="lv" style="--c:${L.c}"><span aria-hidden="true">${L.g}</span><span class="sr">${L.name}</span></td></tr>`;
+  }
+  return `<section class="win" aria-labelledby="hbt"><div class="tbar"><h2 id="hbt">Hour by hour · ${esc(dayLabel(p.di, d.d))}</h2></div><div class="wbody">
+    <p class="hnote">At ${m.elev} m. Wind on the tops in km/h, average / gust.</p>
+    <div class="tscroll"><table class="hours">
+      <thead><tr><th class="tm">Time</th><th><span class="sr">Sky</span></th><th>°C</th><th>Feels</th><th>mm</th><th>Rain</th><th colspan="2">Wind</th><th><span class="sr">Rating</span></th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    <button type="button" class="more" data-allhours>${showAll ? "Daylight hours only" : "Show all 24 hours"}</button>
+  </div></section>`;
+}
+
+function kitBox(p, m) {
+  return `<section class="win" aria-labelledby="kt"><div class="tbar"><h2 id="kt">Pack</h2></div><div class="wbody">
+    <ul class="kit">${kit(p, m).map(([a, b]) => `<li><span class="b" aria-hidden="true">+</span><span>${esc(a)}${b ? `<small>${esc(b)}</small>` : ""}</span></li>`).join("")}</ul>
+  </div></section>`;
+}
+
+function renderSpots() {
+  const P = PROFILES[settings.who];
+  if (!spots.length) {
+    $("spotsView").innerHTML = `<section class="win focusbox"><div class="tbar"><h2>Spots</h2></div><div class="wbody">
+      <p class="errp">No spots yet. Add the hills you walk and see the week for all of them here.</p>
+      <button type="button" class="btn default" data-add>Add a spot</button></div></section>`;
+    return;
+  }
+  const bets = [];
+  const cards = spots.map(s => {
+    const S = fc[s.id], m = S?.m;
+    let n = `<span class="n muted">…</span>`, week = "", best = S?.err ? "Couldn't load the forecast" : "Loading the forecast";
+    if (m) {
+      const ps = plansFor(m), t = ps[0], bp = bestOf(ps);
+      if (bp) bets.push({ s, p: bp });
+      n = t && !t.none
+        ? `<span class="n" style="color:${LV[t.level].c}">${LV[t.level].name}<small>today</small></span>`
+        : `<span class="n muted">${t?.none === "late" ? "Done" : "–"}<small>today</small></span>`;
+      week = `<span class="wk" aria-hidden="true">${ps.map(p => {
+        const ok = p && !p.none;
+        return `<span><b style="color:${ok ? LV[p.level].c : "var(--faint)"}">${ok ? LV[p.level].g : "·"}</b><i>${dateOf(p.day.d).toLocaleDateString("en-IE", { weekday: "narrow" })}</i></span>`;
+      }).join("")}</span>`;
+      best = bp ? `Best ${bp.di === 0 ? "today" : bp.di === 1 ? "tomorrow" : wdShort(bp.day.d)} ${hh(bp.s)}` : "No good window this week";
+    }
+    return `<button type="button" class="acard${s.id === sel ? " on" : ""}" data-spot="${s.id}" data-go aria-label="${esc(s.name)}, ${s.elev} m. ${esc(best)}. Show forecast.">
+      <span class="hd">${esc(s.name)}</span>
+      <span class="bd">${n}<span class="sub">${s.elev} m${s.region ? " · " + esc(s.region) : ""}</span>${week}<span class="sub">${esc(best)}</span></span>
+    </button>`;
+  }).join("");
+  bets.sort((a, b) => a.p.level - b.p.level || a.p.score - b.p.score || a.p.di - b.p.di);
+  const betRows = bets.length
+    ? bets.slice(0, 3).map(({ s, p }) => `<button type="button" class="bet" data-spot="${s.id}" data-day="${p.di}" data-go style="--c:${LV[p.level].c}">
+        <span class="g" aria-hidden="true">${LV[p.level].g}</span>
+        <span class="bt"><b>${esc(s.name)}</b><small>${esc(dayLabel(p.di, p.day.d))} · ${hh(p.s)}–${hh(p.e)} · ${LV[p.level].name}</small></span>
+        <span class="arr" aria-hidden="true">›</span></button>`).join("")
+    : `<p class="loading">Waiting for forecasts <span class="cur" aria-hidden="true"></span></p>`;
+  $("spotsView").innerHTML = `<section class="win focusbox" aria-labelledby="bbt"><div class="tbar"><h2 id="bbt">Best bets this week</h2></div><div class="wbody">
+      <p class="bets-sub">For a ${settings.dur} h walk with ${settings.who === "group" ? "a Scout group" : "just you"}. <button type="button" class="linkbtn" data-plan>Change</button></p>
+      <div class="bets">${betRows}</div></div></section>
+    <div class="grid">${cards}</div>
+    ${seeded ? `<p class="hintline">These are starter spots. Add your own with +, or open one and tap edit to change or remove it.</p>` : ""}`;
+}
+
+function renderStatus() {
+  const s = cur(), S = s && fc[s.id];
+  const t = d => {
+    const dt = new Date(d), same = dt.toDateString() === new Date().toDateString();
+    return dt.toLocaleTimeString("en-IE", { hour: "2-digit", minute: "2-digit" }) + (same ? "" : " on " + dt.toLocaleDateString("en-IE", { weekday: "short", day: "numeric", month: "short" }));
+  };
+  let line = "";
+  if (S?.loading) line = "Updating the forecast…";
+  else if (S?.err && S?.m) line = `Couldn't update. Showing the forecast from ${t(S.at)}.`;
+  else if (S?.at) line = `Updated ${t(S.at)}`;
+  $("status").innerHTML = `${line || s ? `<p>${esc(line)}${S && !S.loading ? `${line ? " · " : ""}<button type="button" class="linkbtn" data-refresh>Refresh</button>` : ""}</p>` : ""}
+    <p><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a> · <button type="button" class="linkbtn" data-about>How ratings work</button></p>`;
+}
+
+// ---------- sheets ----------
+const SHEETS = ["spotSheet", "planSheet", "aboutSheet"];
+function openSheet(id) { SHEETS.forEach(x => { $(x).hidden = x !== id; }); $("scrim").hidden = false; }
+function closeSheets() { SHEETS.forEach(x => { $(x).hidden = true; }); $("scrim").hidden = true; sheetMode = null; }
+let toastTimer = null;
+function toast(msg, undo) {
+  const el = $("toast");
+  el.innerHTML = `<span>${esc(msg)}</span>` + (undo ? `<button type="button" id="undoBtn">Undo</button>` : "");
+  el.hidden = false;
+  if (undo) $("undoBtn").onclick = () => { undo(); el.hidden = true; };
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; }, 4500);
+}
+
+// add / edit a spot
+let sheetMode = null, picked = null, results = [], searchT = null, searchAC = null;
+function suggestHTML() {
+  return `<div class="sugg"><p>Try</p>${SUGGEST.map(n => `<button type="button" data-sugg="${esc(n)}">${esc(n)}</button>`).join("")}</div>`;
+}
+function openAdd() {
+  sheetMode = { mode: "add" }; picked = null;
+  $("spotTitle").textContent = "Add a spot";
+  $("findStep").hidden = false; $("confirmStep").hidden = true;
+  $("q").value = ""; $("locMsg").textContent = "";
+  $("results").innerHTML = suggestHTML();
+  openSheet("spotSheet");
+  $("q").focus();
+}
+function openEdit(id) {
+  const s = spots.find(x => x.id === id);
+  if (!s) return;
+  sheetMode = { mode: "edit", id };
+  showConfirm(s, true);
+  openSheet("spotSheet");
+}
+function showConfirm(place, isEdit) {
+  picked = place;
+  $("spotTitle").textContent = isEdit ? "Edit spot" : "Add a spot";
+  $("findStep").hidden = true; $("confirmStep").hidden = false; $("confirm").hidden = true;
+  $("picked").textContent = [place.region, `${(+place.lat).toFixed(3)}, ${(+place.lon).toFixed(3)}`].filter(Boolean).join(" · ");
+  $("fName").value = place.name || "";
+  $("fElev").value = place.elev != null ? Math.round(place.elev) : "";
+  $("saveBtn").textContent = isEdit ? "Save" : "Add spot";
+  $("delBtn").hidden = !isEdit;
+  $("backBtn").hidden = isEdit;
+  if (!isEdit) $("fElev").focus();
+}
+function parseCoords(q) {
+  const mt = q.match(/^\s*(-?\d{1,2}(?:\.\d+)?)\s*[,\s]\s*(-?\d{1,3}(?:\.\d+)?)\s*$/);
+  if (!mt) return null;
+  const lat = +mt[1], lon = +mt[2];
+  return Math.abs(lat) <= 90 && Math.abs(lon) <= 180 ? { lat, lon } : null;
+}
+async function elevationAt(lat, lon) {
+  const r = await fetch(`https://api.open-meteo.com/v1/elevation?latitude=${lat}&longitude=${lon}`);
+  if (!r.ok) throw new Error("elevation " + r.status);
+  const j = await r.json();
+  return Array.isArray(j.elevation) ? j.elevation[0] : null;
+}
+async function runSearch() {
+  const q = $("q").value.trim();
+  const co = parseCoords(q);
+  if (co) {
+    results = [];
+    $("results").innerHTML = `<button type="button" class="res" data-coords="${co.lat},${co.lon}"><b>Use ${co.lat.toFixed(4)}, ${co.lon.toFixed(4)}</b><span>Coordinates</span></button>`;
+    return;
+  }
+  if (q.length < 2) { $("results").innerHTML = suggestHTML(); return; }
+  searchAC?.abort();
+  searchAC = new AbortController();
+  $("results").innerHTML = `<p class="hint">Searching…</p>`;
+  try {
+    const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=10&language=en&format=json`, { signal: searchAC.signal });
+    if (!r.ok) throw new Error(String(r.status));
+    const j = await r.json();
+    const rank = x => x.country_code === "IE" ? 2 : x.country_code === "GB" ? 1 : 0;
+    results = (j.results || []).map((x, i) => ({ x, i })).sort((a, b) => rank(b.x) - rank(a.x) || a.i - b.i).map(o => o.x);
+    $("results").innerHTML = results.length
+      ? results.map((x, i) => `<button type="button" class="res" data-res="${i}"><b>${esc(x.name)}</b><span>${esc([FEATURE[x.feature_code], x.admin1, x.country].filter(Boolean).join(" · "))}${x.elevation != null ? ` · ${Math.round(x.elevation)} m` : ""}</span></button>`).join("")
+      : `<p class="hint">No places called “${esc(q)}”. Try a nearby town or trailhead, or paste coordinates.</p>`;
+  } catch (e) {
+    if (e.name === "AbortError") return;
+    $("results").innerHTML = `<p class="hint err">Couldn't reach the place search. Check your connection and try again.</p>`;
+  }
+}
+async function pickCoords(lat, lon, name) {
+  $("locMsg").textContent = "Looking up the height…";
+  let elev = null;
+  try { elev = await elevationAt(lat, lon); } catch (_) {}
+  $("locMsg").textContent = "";
+  showConfirm({ name, region: "", lat, lon, elev: elev ?? 0 }, false);
+}
+
+// plan sheet
+function renderPlan() {
+  $("durOpts").innerHTML = DURS.map(d => `<button type="button" data-dur="${d}" aria-pressed="${settings.dur === d}">${d} h</button>`).join("");
+  $("whoOpts").innerHTML = Object.entries(PROFILES).map(([k, P]) => `<button type="button" data-who="${k}" aria-pressed="${settings.who === k}">${esc(P.name)}<small>${esc(P.blurb)}</small></button>`).join("");
+  const P = PROFILES[settings.who];
+  $("limits").innerHTML = `<table class="lim">
+    <thead><tr><th><span class="sr">Limit</span></th><th style="--c:var(--fair)">~ fair</th><th style="--c:var(--poor)">! poor</th><th style="--c:var(--poor)">✕ no go</th></tr></thead>
+    <tbody>
+      <tr><th>Gusts on tops, km/h</th><td>${P.gust[0]}+</td><td>${P.gust[1]}+</td><td>${P.gust[2]}+</td></tr>
+      <tr><th>Feels like on top</th><td>${P.feels[0]}° or less</td><td>${String(P.feels[1]).replace("-", "−")}° or less</td><td></td></tr>
+      <tr><th>Rain per hour</th><td>${P.rain[0]} mm+</td><td>${P.rain[1]} mm+</td><td></td></tr>
+      <tr><th>Tops in cloud</th><td>yes</td><td>thick fog</td><td></td></tr>
+      <tr><th>Snow on top</th><td>${P.strict ? "" : "light"}</td><td>${P.strict ? "any" : "heavy"}</td><td></td></tr>
+      <tr><th>Thunder</th><td></td><td></td><td>any</td></tr>
+    </tbody></table>`;
+}
+
+// ---------- events ----------
+function go(v) { view = v; store.set("hillwx-view", v); render(); window.scrollTo(0, 0); }
+function selectSpot(id) { sel = id; store.set("hillwx-sel", id); const s = cur(); if (s) load(s); }
+
+document.addEventListener("click", e => {
+  const el = e.target;
+  if (el.closest("[data-close]")) { closeSheets(); return; }
+  const tab = el.closest(".tab");
+  if (tab) { go(tab.dataset.view); return; }
+  if (el.closest("#addBtn") || el.closest("[data-add]")) { openAdd(); return; }
+  const sp = el.closest("[data-spot]");
+  if (sp) {
+    selectSpot(sp.dataset.spot);
+    if (sp.dataset.day != null) selDay = +sp.dataset.day;
+    if (sp.hasAttribute("data-go")) go("fc"); else render();
+    return;
+  }
+  const dy = el.closest("[data-day]");
+  if (dy) {
+    selDay = +dy.dataset.day; render();
+    if (dy.hasAttribute("data-scroll")) $("vbox")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+    return;
+  }
+  const ed = el.closest("[data-edit]");
+  if (ed) { openEdit(ed.dataset.edit); return; }
+  if (el.closest("[data-plan]")) { renderPlan(); openSheet("planSheet"); return; }
+  if (el.closest("[data-about]")) { openSheet("aboutSheet"); return; }
+  if (el.closest("[data-refresh]")) { loadAll(true); return; }
+  if (el.closest("[data-allhours]")) { showAll = !showAll; render(); return; }
+  const du = el.closest("[data-dur]");
+  if (du) { settings = { ...settings, dur: +du.dataset.dur }; store.set("hillwx-settings", settings); renderPlan(); render(); return; }
+  const wh = el.closest("[data-who]");
+  if (wh) { settings = { ...settings, who: wh.dataset.who }; store.set("hillwx-settings", settings); renderPlan(); render(); return; }
+  const sg = el.closest("[data-sugg]");
+  if (sg) { $("q").value = sg.dataset.sugg; runSearch(); return; }
+  const rs = el.closest("[data-res]");
+  if (rs) {
+    const x = results[+rs.dataset.res];
+    if (x) showConfirm({ name: x.name, region: [x.admin1, x.country_code !== "IE" ? x.country : ""].filter(Boolean).join(", "), lat: x.latitude, lon: x.longitude, elev: x.elevation ?? 0 }, false);
+    return;
+  }
+  const co = el.closest("[data-coords]");
+  if (co) { const [lat, lon] = co.dataset.coords.split(",").map(Number); pickCoords(lat, lon, "Custom spot"); return; }
+});
+$("scrim").onclick = closeSheets;
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("scrim").hidden) closeSheets(); });
+$("q").addEventListener("input", () => { clearTimeout(searchT); searchT = setTimeout(runSearch, 320); });
+$("backBtn").onclick = () => { $("confirmStep").hidden = true; $("findStep").hidden = false; $("q").focus(); };
+$("locBtn").onclick = () => {
+  if (!navigator.geolocation) { $("locMsg").textContent = "This browser can't share your location. Search instead."; return; }
+  $("locMsg").textContent = "Finding you…";
+  navigator.geolocation.getCurrentPosition(
+    pos => pickCoords(+pos.coords.latitude.toFixed(4), +pos.coords.longitude.toFixed(4), "My location"),
+    err => { $("locMsg").textContent = err.code === 1 ? "Location was blocked. Allow it in your browser, or search instead." : "Couldn't find your location. Search instead."; },
+    { timeout: 12000, maximumAge: 600000 }
+  );
+};
+$("spotSheet").addEventListener("submit", e => {
+  e.preventDefault();
+  if ($("confirmStep").hidden) { clearTimeout(searchT); runSearch(); return; }
+  const name = $("fName").value.trim(), elev = Math.round(Number($("fElev").value));
+  if (!name) { $("fName").focus(); return; }
+  if ($("fElev").value === "" || !Number.isFinite(elev) || elev < 0 || elev > 5000) { toast("Enter a height between 0 and 5000 m"); $("fElev").focus(); return; }
+  if (sheetMode?.mode === "edit") {
+    const s = spots.find(x => x.id === sheetMode.id);
+    if (s) { s.name = name; s.elev = elev; seeded = false; store.set("hillwx-seeded", false); saveSpots(); closeSheets(); render(); load(s); toast("Spot saved"); }
+    return;
+  }
+  const s = { id: uid(), name, region: picked?.region || "", lat: +(+picked.lat).toFixed(4), lon: +(+picked.lon).toFixed(4), elev };
+  spots.push(s); seeded = false; store.set("hillwx-seeded", false); saveSpots();
+  closeSheets(); selectSpot(s.id); selDay = 0; go("fc");
+  toast(`Added ${name}`);
+});
+$("delBtn").onclick = () => { $("confirm").hidden = false; };
+$("confirmNo").onclick = () => { $("confirm").hidden = true; };
+$("confirmYes").onclick = () => {
+  const i = spots.findIndex(x => x.id === sheetMode?.id);
+  if (i < 0) { closeSheets(); return; }
+  const [s] = spots.splice(i, 1);
+  const cached = store.get("hillwx-fc-" + s.id, null), S = fc[s.id];
+  store.del("hillwx-fc-" + s.id); delete fc[s.id];
+  if (sel === s.id) { sel = spots[0]?.id ?? null; store.set("hillwx-sel", sel); }
+  seeded = false; store.set("hillwx-seeded", false); saveSpots();
+  closeSheets(); render();
+  toast(`Removed ${s.name}`, () => {
+    spots.splice(i, 0, s); saveSpots();
+    if (cached) store.set("hillwx-fc-" + s.id, cached);
+    if (S) fc[s.id] = S;
+    if (!sel) { sel = s.id; store.set("hillwx-sel", sel); }
+    render(); load(s);
+  });
+};
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { render(); loadAll(); } });
+setInterval(() => { if (!document.hidden) render(); }, 5 * 60 * 1000);
+
+// ---------- boot ----------
+function boot() {
+  document.querySelectorAll("[data-px]").forEach(el => { el.outerHTML = ICON[el.dataset.px]; });
+  const saved = store.get("hillwx-spots", null);
+  if (Array.isArray(saved)) { spots = saved.filter(s => s && s.id && Number.isFinite(+s.lat) && Number.isFinite(+s.lon)); seeded = store.get("hillwx-seeded", false); }
+  else { spots = DEFAULT_SPOTS.map(s => ({ ...s })); seeded = true; saveSpots(); store.set("hillwx-seeded", true); }
+  const st = store.get("hillwx-settings", {});
+  if (DURS.includes(st.dur)) settings.dur = st.dur;
+  if (PROFILES[st.who]) settings.who = st.who;
+  sel = store.get("hillwx-sel", null);
+  if (!spots.some(s => s.id === sel)) sel = spots[0]?.id ?? null;
+  if (store.get("hillwx-view", "fc") === "spots") view = "spots";
+  // show anything cached straight away, then refresh what's stale
+  spots.forEach(s => {
+    const c = store.get("hillwx-fc-" + s.id, null);
+    const m = c && c.key === spotKey(s) && c.data ? safeModel(c.data, s) : null;
+    fc[s.id] = m ? { key: c.key, at: c.at, m } : { key: spotKey(s) };
+  });
+  render();
+  loadAll();
+}
+boot();
+</script>
+</body>
+</html>
