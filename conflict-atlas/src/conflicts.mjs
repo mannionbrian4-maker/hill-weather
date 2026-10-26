@@ -1,9 +1,9 @@
-// Conflict briefs, as of 19 October 2026.
+// Conflict briefs, as of 26 October 2026.
 // Status and impact ratings are CFR's (Global Conflict Tracker dashboard).
 // "alert" = Crisis Group CrisisWatch conflict risk alert for October 2026.
 // Briefs are written in our own words from CFR, Crisis Group and the linked analysis.
 
-export const ASOF = '19 October 2026';
+export const ASOF = '26 October 2026';
 
 const CFR = 'https://www.cfr.org/global-conflict-tracker/conflict/';
 const ICG = 'https://www.crisisgroup.org/';
@@ -15,12 +15,12 @@ export const conflicts = [
     status: 'Unchanging', impact: 'Medium', where: ['804'], involved: ['643'], marker: [32, 48.6],
     term: 'Ukraine Russia war',
     background: 'Russia’s full-scale invasion in February 2022 became Europe’s largest war since 1945. Russia occupies roughly a fifth of Ukraine, and the front has settled into a grinding contest of drones, missiles and artillery.',
-    latest: 'Russian strikes on Ukrainian cities continue. On 17–18 October Ukraine hit an oil terminal and other targets in St Petersburg in one of its largest drone attacks of the war; Russia’s defence ministry said it downed more than 1,000 drones. President Trump has criticised Ukraine’s strikes on Russian energy, struck a deal on Russian diesel and, on 17 October, waived new US sanctions on Russia. Washington says this keeps Moscow at the table; Zelenskyy says it will embolden Putin.',
-    watch: 'Territory and security guarantees remain the sticking points. Also watch strains between Kyiv and Washington, winter attacks on energy infrastructure, and Europe’s debate over using frozen Russian assets.',
+    latest: 'Zelenskyy says US, Russian and Ukrainian negotiators will meet in Abu Dhabi in the first half of November, starting at technical level; a Kremlin aide said Moscow could resume talks after 4 November. The run-up has been tense: President Trump defended his waiver of new sanctions on Russia as a way to keep Moscow at the table and accused Zelenskyy of not wanting peace, while Zelenskyy said the waiver would hurt Ukraine. Strikes continue on both sides, Ukraine has made small gains near Oleksandrivka according to the Institute for the Study of War, and Russia has stepped up attacks on Black Sea shipping.',
+    watch: 'Whether the November talks happen and get past territory and security guarantees. Also watch strains between Kyiv and Washington, winter attacks on energy infrastructure, and Europe’s debate over using frozen Russian assets.',
     cfr: CFR + 'conflict-ukraine', icg: ICG + 'europe-central-asia/eastern-europe/ukraine',
     reads: [
       ['Crisis Group', 'Ukraine under Strain: The Choices Facing the EU', '15 Oct 2026', ICG + 'cmt/europe/european-union-ukraine-russia/ukraine-under-strain-choices-facing-eu'],
-      ['Chatham House', 'How will Ukraine get through winter after the Trump–Putin diesel deal?', 'Oct 2026', 'https://www.chathamhouse.org/2026/10/how-will-ukraine-get-through-winter-after-trump-putin-diesel-deal-independent-thinking-podcast'],
+      ['Chatham House', 'After Trump’s Russian diesel deal, will Europe give Ukraine the support it needs?', '15 Oct 2026', 'https://www.chathamhouse.org/2026/10/after-trumps-russian-diesel-deal-will-europe-give-ukraine-support-it-needs'],
       ['Crisis Group', 'The Changing Role of Nuclear Weapons in Europe', '13 Oct 2026', ICG + 'rpt/europe/europe-russia-ukraine-united-states/273-changing-role-nuclear-weapons-europe'],
       ['RUSI', 'Russia’s Aggression in Ukraine Will Persist Through 2026', '', 'https://www.rusi.org/explore-our-research/publications/commentary/russias-aggression-ukraine-will-persist-through-2026'],
       ['CSIS', 'The Geography of Coercion: Russian Missile and Drone Campaigns in Ukraine', '', 'https://www.csis.org/analysis/geography-coercion-russian-missile-and-drone-campaigns-ukraine'],
@@ -48,15 +48,15 @@ export const conflicts = [
     status: 'Worsening', impact: 'High', where: ['364'], involved: ['376', '840'], marker: [53.5, 32.4], alert: true,
     term: 'Iran war ceasefire',
     background: 'The United States and Israel attacked Iran from 28 February 2026, killing Supreme Leader Ali Khamenei and striking nuclear and military sites. The fighting widened into a regional war and disrupted shipping through the Strait of Hormuz.',
-    latest: 'A Pakistan-mediated interim deal in June paused major hostilities, but it has largely unravelled at sea. October has seen the most attacks on ships around Hormuz since the war began, according to the UK’s maritime security agency, and a container ship sank on 15 October. Iran says vessels are hitting mines; the US says they are being struck by Iranian projectiles. US forces are still blockading Iranian ports, and Brent crude touched $110 a barrel. Mediators are passing messages, but nuclear talks have not started.',
-    watch: 'Crisis Group flags a risk of renewed escalation in October. President Trump has reportedly told the military to be ready for larger strikes after the 3 November US midterm elections.',
+    latest: 'A Pakistan-mediated interim deal in June paused major hostilities, but it has largely unravelled at sea, and the Strait of Hormuz is close to shut to commercial traffic. On 22 October Iran’s Revolutionary Guard said it had hit four ships using a US-backed route; President Trump accused Tehran of staging incidents to push up oil prices. Brent crude rose above $117 on 23 October, its highest since March. The US says it can keep its blockade of Iranian ports going indefinitely; an Iranian envoy said Tehran would reopen the strait if the blockade were lifted, which Iranian state media then denied. Saudi, Turkish and Pakistani officials were due in Tehran on 26 October for de-escalation talks.',
+    watch: 'Crisis Group flags a risk of renewed escalation in October. President Trump says he is weighing a deal against new strikes to “finish” Iran, and that any strikes would wait until after the 3 November US midterm elections.',
     cfr: CFR + 'confrontation-between-united-states-and-iran', icg: ICG + 'middle-east-north-africa/gulf-and-arabian-peninsula/iran',
     reads: [
+      ['CFR', 'Will the United States Attack Iran After the Midterms?', '23 Oct 2026', 'https://cfr.org/articles/will-the-united-states-attack-iran-after-the-midterms'],
       ['Crisis Group', 'How War is Reshaping Iran’s “Axis of Resistance”', '16 Oct 2026', ICG + 'cmt/middle-east-north-africa/iran/how-war-reshaping-irans-axis-resistance'],
       ['Crisis Group', 'Five Energy Market Factors That Could Tip the Scales in the Middle East War', '1 Oct 2026', ICG + 'cmt/united-states/united-states-iran-israelpalestine/five-energy-market-factors-could-tip-scales-middle-east-war'],
-      ['Chatham House', 'Will the US–Iran ceasefire hold?', 'Jun 2026', 'https://www.chathamhouse.org/2026/06/will-us-iran-ceasefire-hold'],
-      ['IISS', 'A bad peace: the Arab Gulf states and the US–Iran memorandum of understanding', 'Jun 2026', 'https://www.iiss.org/online-analysis/online-analysis/2026/06/a-bad-peace-the-arab-gulf-states-and-the-usiran-memorandum-of-understanding/'],
       ['CSIS', 'Bunker Busters: Deep Targets, Shallow Stocks', '15 Oct 2026', 'https://www.csis.org/analysis/bunker-busters-deep-targets-shallow-stocks'],
+      ['Chatham House', 'Will the US–Iran ceasefire hold?', 'Jun 2026', 'https://www.chathamhouse.org/2026/06/will-us-iran-ceasefire-hold'],
     ],
   },
   {
@@ -65,7 +65,7 @@ export const conflicts = [
     term: 'Gaza Israel Palestine',
     background: 'Hamas’s attack on 7 October 2023 killed about 1,200 people in Israel and took some 250 hostages. Israel’s war in Gaza that followed has killed more than 70,000 Palestinians, according to Gaza’s health authorities, and displaced almost the entire population. An October 2025 ceasefire brought home all remaining hostages.',
     latest: 'A Hamas disarmament agreement announced by the US-led Board of Peace in July 2026 has not been carried out: Hamas wants Israeli forces to withdraw first, and Israel has blocked parts of the plan for an international stabilisation force, which has yet to deploy. Israel still holds around 60 percent of Gaza, and Al Jazeera reports more than 1,400 Palestinians killed there since the ceasefire; Israel says its strikes target Hamas. Settler attacks and Israeli military raids in the West Bank continue.',
-    watch: 'Israel votes in a general election on 27 October. Also watch whether the order of disarmament and withdrawal can be agreed.',
+    watch: 'Israel votes in a general election on 27 October, and coalition-building could take weeks. Then watch whether the next government and Hamas can agree the order of disarmament and withdrawal.',
     cfr: CFR + 'israeli-palestinian-conflict', icg: ICG + 'middle-east-north-africa/east-mediterranean-mena/israelpalestine',
     reads: [
       ['Crisis Group', 'Israel’s Elections: What’s at Stake?', '15 Oct 2026', ICG + 'qna/middle-east-north-africa/israelpalestine/israels-elections-whats-stake'],
@@ -80,7 +80,7 @@ export const conflicts = [
     status: 'Unchanging', impact: 'Medium', where: ['422'], involved: ['376'], marker: [35.9, 33.9],
     term: 'Lebanon Hezbollah Israel',
     background: 'Hezbollah began firing on Israel in October 2023, and Israel’s 2024 campaign badly weakened the group. Fighting resumed during the 2026 Iran war, and an Israeli ground invasion in March 2026 left Israel holding about a fifth of Lebanon.',
-    latest: 'The June interim deal was meant to end Israel–Hezbollah fighting. A US-brokered framework ties Israeli withdrawal to Hezbollah disarming, which the group rejects. Lebanon and Israel have held several rounds of direct talks, and a Lebanese military delegation was due at US-hosted talks in Tampa on 20 October to press for an end to Israeli strikes, which continue in the south.',
+    latest: 'The June interim deal was meant to end Israel–Hezbollah fighting. A US-brokered framework ties Israeli withdrawal to Hezbollah disarming, which the group rejects. Lebanon and Israel have held several rounds of direct talks. US-hosted military talks at CENTCOM headquarters in Tampa on about 21 October lasted six hours without a breakthrough; Lebanese reports say how to verify Hezbollah’s disarmament was the main obstacle. Israeli strikes continue in the south.',
     watch: 'Whether the Lebanese army can take control of the south, and what follows the UN peacekeeping mission (UNIFIL), whose mandate ends in December 2026. Irish troops serve with UNIFIL.',
     cfr: CFR + 'political-instability-lebanon', icg: ICG + 'middle-east-north-africa/east-mediterranean-mena/lebanon',
     reads: [
@@ -95,8 +95,8 @@ export const conflicts = [
     status: 'Worsening', impact: 'Medium', where: ['887'], involved: ['682'], marker: [43.6, 14.6], alert: true,
     term: 'Yemen Houthis Red Sea',
     background: 'Yemen’s war between the Houthis and the Saudi-backed government dates to 2014, and a 2022 UN-brokered truce largely froze it. From late 2023 the Houthis attacked Red Sea shipping over the Gaza war, drawing US and UK strikes.',
-    latest: 'In September 2026 the Houthis pushed down the Red Sea coast, taking Mocha and reaching the Bab al-Mandab strait, and heavily bombarded Saudi Arabia. Riyadh has stepped up airstrikes, and government forces have counter-attacked around Taiz, where aid agencies warn hospitals are running out of fuel. On 18 October the Gulf Cooperation Council accused the Houthis of deadly strikes on Saudi civilian airports and backed the kingdom’s right to self-defence.',
-    watch: 'Crisis Group warns of further escalation in October, with risks for the Gulf states and for shipping through one of the world’s main chokepoints.',
+    latest: 'In September 2026 the Houthis pushed down the Red Sea coast, taking Mocha and reaching the Bab al-Mandab strait. Their missile and drone war on Saudi Arabia has intensified: a strike on Riyadh’s main airport on 10 October killed 13 people, and Houthi-claimed attacks killed 17 in Saudi Arabia in October, according to The National. In the week to 26 October the Houthis claimed hits on Saudi airports, oil pumping stations and a pipeline; Riyadh says it intercepted missiles aimed at Riyadh, Yanbu and Taif, and the Saudi-led coalition says it destroyed launchers in Sanaa. Riyadh airport partly reopened on 25 October.',
+    watch: 'Crisis Group warns of further escalation in October, with risks for the Gulf states and for shipping through one of the world’s main chokepoints. Saudi talks with Iran in Tehran, alongside Turkey and Pakistan, are a test of whether Riyadh can lower the temperature.',
     cfr: CFR + 'war-yemen', icg: ICG + 'middle-east-north-africa/gulf-and-arabian-peninsula/yemen',
     reads: [
       ['CSIS', 'Avoiding Another Long War in Yemen', '15 Oct 2026', 'https://www.csis.org/analysis/avoiding-another-long-war-yemen'],
@@ -170,7 +170,7 @@ export const conflicts = [
     status: 'Worsening', impact: 'Low', where: ['729'], involved: [], marker: [30.2, 14.5],
     term: 'Sudan war',
     background: 'War between Sudan’s army and the paramilitary Rapid Support Forces (RSF) broke out in April 2023 and has become one of the world’s worst humanitarian crises. The army has retaken Khartoum. The RSF holds most of Darfur, where attacks on non-Arab communities have led to accusations of genocide.',
-    latest: 'The army has regained momentum in Kordofan: it secured the road from the capital to El-Obeid in July and took the RSF stronghold of al-Mazroub in North Kordofan on 2 October. Army chief Abdel Fattah al-Burhan rejected talks on 6 October and vowed to retake all RSF-held territory. Both sides are using drones heavily; the RSF says an army strike on Nyala in Darfur on 16 October hit a market and killed 30 civilians, while the army says it hit RSF positions.',
+    latest: 'The army has regained momentum in Kordofan: it secured the road from the capital to El-Obeid in July and took the RSF stronghold of al-Mazroub in North Kordofan on 2 October. Army chief Abdel Fattah al-Burhan rejected talks on 6 October and vowed to retake all RSF-held territory. Both sides are relying on drones: the UN human rights office says drone strikes by the army and the RSF killed at least 306 people in the first three weeks of October, including at least 139 when a truck was hit near Dibab in West Kordofan on 18 October and more than 80 at a market in the disputed Abyei area on 19 October.',
     watch: 'Whether the army pushes into West Kordofan and Darfur, famine conditions, and the pressure on neighbouring Chad and South Sudan.',
     cfr: CFR + 'power-struggle-sudan', icg: ICG + 'africa/horn-africa/sudan',
     reads: [
@@ -186,7 +186,7 @@ export const conflicts = [
     status: 'Worsening', impact: 'Low', where: ['231'], involved: ['232'], marker: [39.5, 12.5], alert: true,
     term: 'Ethiopia Tigray Eritrea',
     background: 'The 2020–22 war in Tigray killed hundreds of thousands and ended with the Pretoria agreement. Federal authority in Tigray eroded from 2025, while the Fano militia in Amhara and the Oromo Liberation Army kept fighting.',
-    latest: 'In September the Tigray People’s Liberation Front (TPLF) joined a seven-group alliance with Fano and the OLA that aims to oust Prime Minister Abiy Ahmed, and launched an offensive. Federal forces hit back and retook Mekelle in early October; the TPLF says it withdrew, and government and allied Tigrayan forces have since entered Adwa, Adigrat and Aksum. Ethiopia and Eritrea cut diplomatic ties on 1 October. Addis Ababa accuses Eritrea, Sudan and Egypt of backing the rebels, which all three deny.',
+    latest: 'In September the Tigray People’s Liberation Front (TPLF) joined a seven-group alliance with Fano and the OLA that aims to oust Prime Minister Abiy Ahmed, and launched an offensive. Federal forces hit back and retook Mekelle and other towns in October, and on 16 October Abiy appointed a caretaker council to run Tigray and prepare elections. Fighting continues in central and western Tigray, and Tigrayan forces have reportedly retaken some areas near the Eritrean border that federal troops left. Ethiopia and Eritrea cut diplomatic ties on 1 October; on 19 October Abiy warned Eritrea of “severe consequences” for backing rebels, which Asmara denies.',
     watch: 'Crisis Group’s October alert: a real risk of war between Ethiopia and Eritrea, as Ethiopian heavy weapons are reported moving toward the border.',
     cfr: CFR + 'conflict-ethiopia', icg: ICG + 'africa/horn-africa/ethiopia',
     reads: [
@@ -202,7 +202,7 @@ export const conflicts = [
     status: 'Worsening', impact: 'Low', where: ['180'], involved: ['646'], marker: [28.6, -1.6],
     term: 'DR Congo M23 Rwanda',
     background: 'Eastern Congo has suffered decades of conflict over land, minerals and the legacy of the 1994 Rwandan genocide. Rwanda-backed M23 rebels seized the cities of Goma and Bukavu in early 2025, and more than seven million people are displaced.',
-    latest: 'A US-brokered DRC–Rwanda deal and Qatar-mediated talks with M23 have not been carried out on key points, and fighting continues. On 13 October former president Joseph Kabila launched a new political-military coalition that includes M23, with himself at its head. Government–M23 talks in Qatar are expected in November, and an Ebola outbreak has added to the crisis.',
+    latest: 'A US-brokered DRC–Rwanda deal and Qatar-mediated talks with M23 have not been carried out on key points, and fighting continues. On 13 October former president Joseph Kabila launched a new political-military coalition with M23, with himself at its head; the government says he is preparing a general attack on the country, which Kabila denies. Drone and artillery fire continues, especially in South Kivu. Government–M23 talks in Qatar are expected in November, and an Ebola outbreak has added to the crisis.',
     watch: 'Whether Rwandan troops withdraw, and whether the DRC’s national dialogue gets anywhere.',
     cfr: CFR + 'violence-democratic-republic-congo', icg: ICG + 'africa/central-africa/democratic-republic-congo',
     reads: [
@@ -292,7 +292,7 @@ export const conflicts = [
     status: 'Unchanging', impact: 'Low', where: ['004', '586'], involved: [], marker: [70.6, 33.4], alert: true,
     term: 'Afghanistan Pakistan Taliban',
     background: 'Pakistan blames a surge in deadly attacks on the Pakistani Taliban (TTP), which it says operates from Afghan soil. The Taliban government in Kabul denies sheltering them. In early 2026 Pakistan struck Taliban military sites and declared itself in open war with Kabul.',
-    latest: 'After a three-month lull, militant attacks in Pakistan’s border regions in September prompted new Pakistani airstrikes inside Afghanistan. Moscow-hosted regional talks on 5 October ended without agreement, and border clashes around Kurram and Paktia continued into mid-October.',
+    latest: 'After a three-month lull, militant attacks in Pakistan’s border regions in September prompted new Pakistani airstrikes inside Afghanistan. Moscow-hosted regional talks on 5 October ended without agreement. On 17 October the two sides traded fire for nearly four hours around Kurram and Paktia, each blaming the other. Russia, China and the EU have all urged de-escalation.',
     watch: 'Crisis Group flags a risk of further escalation in October.',
     cfr: CFR + 'war-afghanistan', icg: ICG + 'asia/south-asia/afghanistan',
     reads: [
@@ -337,7 +337,7 @@ export const conflicts = [
     status: 'Developing', impact: 'High', where: ['408'], involved: ['410'], marker: [127.0, 40.2],
     term: 'North Korea',
     background: 'North Korea has built nuclear weapons and ballistic missiles in defiance of UN sanctions, threatening South Korea and Japan.',
-    latest: 'Pyongyang has moved closer to Moscow, supplying artillery and troops for Russia’s war in Ukraine, and held a summit with Xi Jinping in 2026. It insists its nuclear status is not up for negotiation.',
+    latest: 'Pyongyang has moved closer to Moscow, supplying artillery and troops for Russia’s war in Ukraine, and held a summit with Xi Jinping in 2026. It insists its nuclear status is not up for negotiation, and on 3 October tested an intermediate-range missile that it says can manoeuvre to evade missile defences.',
     watch: 'Russian technical help for North Korea’s weapons programmes.',
     cfr: CFR + 'north-korea-crisis', icg: ICG + 'asia/north-east-asia/korean-peninsula',
     reads: [
@@ -352,7 +352,7 @@ export const conflicts = [
     status: 'Unchanging', impact: 'High', where: [], involved: ['156', '608', '704', '458', '096'], marker: [114.5, 12.5],
     term: 'South China Sea',
     background: 'China claims most of the South China Sea, a claim an international tribunal rejected in 2016. Its coast guard and maritime militia regularly confront Philippine and Vietnamese vessels.',
-    latest: 'Chinese and Philippine ships clashed three times in one week in July 2026 at Scarborough Shoal and Second Thomas Shoal, prompting joint US–Philippines–Japan drills. Manila’s push for a binding code of conduct with ASEAN has stalled.',
+    latest: 'Chinese and Philippine ships clashed three times in one week in July 2026 at Scarborough Shoal and Second Thomas Shoal, prompting joint US–Philippines–Japan drills. Manila’s push for a binding code of conduct with ASEAN has stalled. The Philippine military says the number of Chinese navy and coast guard ships it tracked nearly doubled from 56 in August to 101 in September.',
     watch: 'Scarborough Shoal, where China’s presence has surged.',
     cfr: CFR + 'territorial-disputes-south-china-sea', icg: ICG + 'asia/south-east-asia/south-china-sea',
     reads: [
@@ -368,8 +368,8 @@ export const conflicts = [
     status: 'Worsening', impact: 'Medium', where: ['332'], involved: [], marker: [-72.5, 18.9],
     term: 'Haiti gangs',
     background: 'Haiti’s long crisis deepened after President Jovenel Moïse was assassinated in 2021. Armed gangs control an estimated 90 percent of Port-au-Prince and have displaced more than 1.4 million people.',
-    latest: 'A UN-backed Gang Suppression Force began operating in June 2026, but gangs still dominate three of Haiti’s ten departments. In late September the UN Security Council extended its mandate to 31 March 2027; about 1,500 troops are deployed, roughly 30 percent of its planned size. Elections are tentatively set for December after repeated delays.',
-    watch: 'Whether the force reaches full strength and funding, and whether the December election date holds.',
+    latest: 'A UN-backed Gang Suppression Force began operating in June 2026, but gangs still dominate three of Haiti’s ten departments. In late September the UN Security Council extended its mandate to 31 March 2027, but the force remains well short of its planned size. On 18 October gangs attacked a force armoured vehicle in Croix-des-Bouquets, north of Port-au-Prince, and four Salvadoran soldiers went missing; El Salvador has sent special forces to search for them. Haiti’s electoral council has postponed the elections planned for 13 December indefinitely, citing gang violence.',
+    watch: 'Whether the force reaches full strength and funding, the fate of the missing soldiers, and when a new election date is set.',
     cfr: CFR + 'instability-haiti', icg: ICG + 'latin-america-caribbean/haiti',
     reads: [
       ['Chatham House', 'Haiti must not rush to reschedule elections', 'Oct 2026', 'https://chathamhouse.org/2026/10/haiti-must-not-rush-reschedule-elections-credible-secure-electoral-process-priority'],
